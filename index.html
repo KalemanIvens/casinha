@@ -65,7 +65,7 @@ h1{font-size:26px;letter-spacing:-.03em;margin:0}.top{display:flex;justify-conte
 .fab{display:flex;align-items:center;gap:6px;position:fixed;right:16px;bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--c);border:1px solid var(--l);border-radius:99px;padding:9px 14px;font-size:13px;font-weight:600;z-index:3}
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:5}.sheet.on{display:flex}
 .sheet>div{background:var(--c);width:100%;max-width:480px;max-height:92%;overflow-y:auto;border-radius:30px 30px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));animation:up .35s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(60px);opacity:0}}
-input,select{width:100%;font:inherit;color:var(--t);background:var(--bg);border:0;border-radius:14px;padding:14px;margin-bottom:10px}
+input,select{width:100%;min-width:0;font:inherit;color:var(--t);background:var(--bg);border:0;border-radius:14px;padding:14px;margin-bottom:10px}
 .amt{font-size:46px;font-weight:700;letter-spacing:-.04em;text-align:center;margin:6px 0 10px;font-variant-numeric:tabular-nums}
 .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}.kp button{padding:13px;font-size:22px;border-radius:16px;background:var(--bg)}
 .go{width:100%;background:var(--li);color:#15131f;border-radius:18px;padding:16px;font-weight:700;font-size:16px}
@@ -168,10 +168,10 @@ function profile(){const A=sum(items(mi),()=>true);
  document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const i=+b.dataset.w;prefs[i]^=1;b.classList.toggle("on",!!prefs[i]);b.setAttribute("aria-checked",!!prefs[i]);if(i==0)hide=!!prefs[0]});
  $("lo").onclick=()=>FB.out()}
 function shop(){const n=SHP.filter(x=>x[1]).length;
- $("app").innerHTML=`<div class="top"><h1>Compras</h1><small style="color:var(--m)">${n} de ${SHP.length} comprados</small></div><div style="display:flex;gap:8px"><input id="si" placeholder="O que precisa comprar?"><button class="pill" id="sa" style="height:48px">Adicionar</button></div>${SHP.map((x,i)=>`<div class="row ${x[1]?"dn":""}" data-i="${i}" style="animation-delay:${i*40}ms"><div class="ck ${x[1]?"on":""}">${x[1]?ico("check",16):""}</div><div class="n"><div>${E(x[0])}</div></div><button class="tr" data-x="${i}" aria-label="Excluir item">${ico("trash",18)}</button></div>`).join("")}`;
+ $("app").innerHTML=`<div class="top"><h1>Compras</h1><small style="color:var(--m)">${n} de ${SHP.length} comprados</small></div><div style="display:flex;gap:8px;align-items:flex-start"><input id="si" enterkeyhint="done" placeholder="O que precisa comprar?" style="flex:1"><button class="pill" id="sa" style="height:48px;flex:none">Adicionar</button></div>${SHP.map((x,i)=>`<div class="row ${x[1]?"dn":""}" data-i="${i}" style="animation-delay:${i*40}ms"><div class="ck ${x[1]?"on":""}">${x[1]?ico("check",16):""}</div><div class="n"><div>${E(x[0])}</div></div><button class="tr" data-x="${i}" aria-label="Excluir item">${ico("trash",18)}</button></div>`).join("")}`;
  document.querySelectorAll("[data-i]").forEach(r=>{let t,lp=0;r.onpointerdown=()=>{lp=0;t=setTimeout(()=>{lp=1;del(r.dataset.i)},550)};["pointerup","pointerleave","pointercancel"].forEach(ev=>r.addEventListener(ev,()=>clearTimeout(t)));r.onclick=()=>{if(lp)return;SHP[r.dataset.i][1]^=1;shop()}});
  document.querySelectorAll("[data-x]").forEach(b=>b.onclick=e=>{e.stopPropagation();del(b.dataset.x)});
- const add=()=>{const v=$("si").value.trim();if(v){SHP.unshift([v,0]);shop()}};$("sa").onclick=add;$("si").onkeydown=e=>{if(e.key=="Enter")add()}}
+ const add=()=>{const v=$("si").value.trim();if(v){SHP.unshift([v,0]);shop();$("si").focus()}};$("sa").onclick=add;$("si").onkeydown=e=>{if(e.key=="Enter"||e.keyCode==13)add()}}
 function goals(){const S=SALDO[mi]-pagar(mi);
  $("app").innerHTML=`<div class="top"><h1>Metas</h1><button class="pill" id="ng">Nova meta</button></div>${G.map((g,i)=>{const f=g.a-g.g,m=Math.ceil(f/Math.max(S,1));return`<div class="gc"><div class="sh"><div class="ic">${ico(g.e)}</div><div class="t"><b style="font-size:17px">${E(g.n)}</b><br><small>${M(g.g)} de ${M(g.a)}</small>${g.cur&&cur=="BRL"?`<br><small>≈ ${fmt(g.g,g.cur)} de ${fmt(g.a,g.cur)} hoje</small>`:""}</div><button class="pill" data-g="${i}">Guardar</button></div><div class="pb"><i data-w="${g.g/g.a*100}%"></i></div><small>Faltam ${R(f)}. No ritmo da sobra prevista, cerca de ${m} meses.</small>${g.al?`<div style="margin-top:10px;font-size:14px;display:flex;align-items:center;gap:6px">${ico("bell",16)} Avisar quando chegar a ${R(g.al)} <small>(hoje ${R(g.hoje)})</small></div>`:""}</div>`}).join("")}`;
  document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const i=b.dataset.g;sheet(`<h2 style="margin-bottom:12px">Guardar em ${E(G[i].n)}</h2><input id="gv" inputmode="decimal" placeholder="Valor (R$)"><button class="go" id="gk">Guardar</button>`);$("gk").onclick=()=>{const v=parseFloat($("gv").value.replace(",","."));if(!(v>0))return toast("Informe um valor");G[i].g+=v;sh.classList.remove("on");goals();toast("Valor guardado")}});
@@ -209,7 +209,7 @@ window.onSyncErr=e=>toast("Não foi possível sincronizar: "+(e.code||e.message)
 window.onAuth=(u,json)=>{
  if(!u){ready=false;inn=false;document.body.classList.add("out");login();return}
  if(!inn){inn=true;document.body.classList.remove("out");if(json){try{load(JSON.parse(json))}catch(e){}}hide=!!prefs[0];last=snap();ready=true;tab=0;go();if(!json)FB.save(last);return}
- if(json&&json!==last){try{load(JSON.parse(json));last=json;go()}catch(e){}}};
+ if(json&&json!==last&&snap()===last){try{load(JSON.parse(json));last=json;go()}catch(e){}}};
 setInterval(()=>{if(!ready||!window.FB)return;const x=snap();if(x!==last){last=x;FB.save(x)}},1500);
 $("app").innerHTML='<p style="text-align:center;color:var(--m);padding-top:90px">Carregando…</p>';document.body.classList.add("out");
 setTimeout(()=>{if(!window.FB)login("Não foi possível carregar o serviço de login. Verifique a conexão.")},8000);
