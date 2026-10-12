@@ -93,7 +93,45 @@ const ML=m=>MS[m%12]+" "+Math.floor(m/12),MH=m=>MS[m%12]+(Math.floor(m/12)==T0.g
 const CAT={Moradia:["home"],Assinaturas:["repeat"],Mercado:["cart"],Restaurante:["fork"],Compras:["bag"],Transporte:["car"],Lazer:["play"],Saúde:["heart"],Impostos:["receipt"],Outros:["more"]};
 const TP={f:["Recorrentes","var(--t)"],p:["Parcelas","#c8f03c"],v:["Avulsos","#a3a99a"]},NM={USD:"Dólar",EUR:"Euro",GBP:"Libra"};
 const blank=()=>({ver:2,user:{n:"",e:"",t:""},photo:null,prefs:[0,1,1],bks:[],vd:{},saldo:{cc:null,vale:null,cx:0,inv:0},rec:[],ent:[],lan:[],ea:[],ov:{},metas:[],compras:[],alr:{},fat:[]});
+function seed(){
+ const o=blank();
+ o.bks=["Nubank","Mercado Pago"];
+ o.saldo={cc:1472.94,vale:12.16,cx:555.83,inv:533.31};
+ o.vd={"Mercado Pago":9};
+ const recD=(n,v,dia,m,c,b,jf)=>{const r={id:uid(),n,dia,b,ini:CM,fim:null,h:[[CM,v]],m,c};if(jf)r.jf=jf;o.rec.push(r)};
+ recD("Aluguel",815.38,10,"Pix","Moradia","");
+ recD("Internet",99.99,15,"Débito","Moradia","");
+ recD("Água",75,10,"Débito","Moradia","");
+ recD("Luz",100,10,"Débito","Moradia","");
+ recD("Vivo",38,9,"Crédito","Assinaturas","Mercado Pago",CM);
+ recD("MEI",86,12,"Pix","Impostos","");
+ recD("Pacote Adobe",80,5,"Crédito","Assinaturas","");
+ recD("Nubank+",29,9,"Crédito","Assinaturas","Nubank",CM);
+ recD("Plano de saúde",33.40,5,"Débito","Saúde","");
+ recD("iCloud",5.90,5,"Crédito","Assinaturas","");
+ recD("FAAP",203.25,5,"Débito","Outros","");
+ recD("Google One",4.50,5,"Crédito","Assinaturas","");
+ recD("Claude",108.05,9,"Crédito","Assinaturas","Mercado Pago",CM);
+ o.ent.push({id:uid(),n:"Ticket Alimentação",dia:20,b:"",t:"vale",ini:CM,fim:null,h:[[CM,740.82]]});
+ o.ent.push({id:uid(),n:"Salário",dia:7,b:"",t:"cc",ini:CM,fim:null,h:[[CM,4304.02]]});
+ o.fat.push({id:uid(),b:"Nubank",mes:CM,v:192.41});
+ o.fat.push({id:uid(),b:"Mercado Pago",mes:CM,v:853.45});
+ const push=(n,m,c,b,v,mes,dia,gid,pc)=>o.lan.push({id:uid(),n,m,c,b,v,mes,dia,gid,pc});
+ push("Mão de obra do carro","Pix","Outros","",70.67,CM,15,"g_carro_mo","1/3");
+ push("Mão de obra do carro","Pix","Outros","",70.67,CM+1,15,"g_carro_mo","2/3");
+ push("Mão de obra do carro","Pix","Outros","",70.67,CM+2,15,"g_carro_mo","3/3");
+ push("Torre Maia (Isadora)","Crédito","Compras","Nubank",43.20,CM+1,9,"g_torre","6/7");
+ push("Torre Maia (Isadora)","Crédito","Compras","Nubank",43.20,CM+2,9,"g_torre","7/7");
+ push("Fogão (Isadora)","Pix","Compras","",59.31,CM,15,"g_fogao","8/10");
+ push("Fogão (Isadora)","Pix","Compras","",59.31,CM+1,15,"g_fogao","9/10");
+ push("Fogão (Isadora)","Pix","Compras","",59.31,CM+2,15,"g_fogao","10/10");
+ push("Peças do carro (Isadora)","Pix","Compras","",55.88,CM,15,"g_pecas","3/5");
+ push("Peças do carro (Isadora)","Pix","Compras","",55.88,CM+1,15,"g_pecas","4/5");
+ push("Peças do carro (Isadora)","Pix","Compras","",55.88,CM+2,15,"g_pecas","5/5");
+ return o}
+
 let S=blank(),mi=CM,tab=0,mode="Colunas",fp=[],fb=[],fc=[],cur="BRL",hide=false,RATE={USD:5.4,EUR:6.25,GBP:7.3},live=false;
+let CDI=13.65,TD_TAXA=null;const rendMes=(v,pctCDI)=>v*(Math.pow(1+(CDI*pctCDI/100)/100,1/12)-1);
 const uid=()=>Math.random().toString(36).slice(2,9),snap=()=>JSON.stringify(S);
 const load=j=>{const o=JSON.parse(j);if(o.ver==2)S=Object.assign(blank(),o);else{S=blank();S.user=o.user||S.user;S.photo=o.photo||null;S.prefs=o.prefs||S.prefs;S.bks=o.BKS||[];S.compras=(o.SHP||[]).map(x=>({id:uid(),n:x[0],ok:!!x[1]}))}};
 const fmt=(v,c)=>c=="BRL"?R(v):new Intl.NumberFormat("pt-BR",{style:"currency",currency:c}).format(v/RATE[c]),M=v=>fmt(v,cur),H=v=>hide?"••••":M(v);
@@ -131,7 +169,7 @@ function home(){const a=items(mi),F=sum(a,x=>x.k=="f"),P=sum(a,x=>x.k=="p"),Vv=s
  ${cc==null?`<div class="warn"><b>Vamos começar</b>Informe seus saldos e cadastre suas contas recorrentes (aluguel, luz, assinaturas) e entradas (salário, vale).<div class="btn2"><button class="go gh" id="ob1">Informar saldos</button><button class="go gh" id="ob2">Cadastrar contas</button></div></div>`:""}
  <div class="car" id="car"><div class="cd c1"><div class="sh"><small class="t">Saldo da conta corrente</small><button id="ed" aria-label="Atualizar saldos" style="margin-right:8px">${ico("edit",18)}</button><button id="eye" aria-label="Mostrar ou ocultar saldo">${ico(hide?"eyeoff":"eye")}</button></div><div class="big" id="bg">R$ —</div><div class="cs"><div><small>Ainda a pagar</small><b>${H(A)}</b></div><div><small>Sobra prevista</small><b>${Sb==null?"—":H(Sb)}</b></div></div></div>
  <div class="cd c4"><small>Vale-alimentação</small><div class="big">${hide?"R$ ••••":M(S.saldo.vale||0)}</div><div class="cs"><div><small>Próxima entrada</small><b>${vn?`dia ${vn.dia||"?"}, ${H(val(vn,mi))}`:"—"}</b></div><div><small>Gasto no mês</small><b>${H(valeG)}</b></div></div></div>
- <div class="cd c2"><small>Guardado e investido</small><div class="big">${hide?"R$ ••••":M(S.saldo.cx+S.saldo.inv)}</div><div class="cs"><div><small>Caixinhas</small><b>${H(S.saldo.cx)}</b></div><div><small>Investimentos</small><b>${H(S.saldo.inv)}</b></div></div></div></div>
+ <div class="cd c2 rw" id="rendCard"><small>Guardado e investido</small><div class="big">${hide?"R$ ••••":M(S.saldo.cx+S.saldo.inv)}</div><div class="cs"><div><small>Caixinhas</small><b>${H(S.saldo.cx)}</b></div><div><small>Investimentos</small><b>${H(S.saldo.inv)}</b></div></div><div class="cs" style="margin-top:8px"><div><small>Rende por mês (conta)</small><b>${H(rendMes(cc||0,120))}</b></div><div><small>Rende por mês (caixinha)</small><b>${H(rendMes(S.saldo.cx,120))}</b></div></div><small style="opacity:.6;display:block;margin-top:6px">Estimativa a 120% do CDI (${CDI}% a.a.). Toque para ajustar a taxa.</small></div></div>
  <div class="dots"><i class="on"></i><i></i><i></i></div>
  <div class="chips" style="justify-content:center;-webkit-mask-image:none;mask-image:none;margin-bottom:2px">${[["BRL","R$"],["USD","US$"],["EUR","€"],["GBP","£"]].map(([c,l])=>`<button class="chip ${c==cur?"on":""}" data-cu="${c}">${l}</button>`).join("")}</div><div class="lh" style="text-align:center">${cur=="BRL"?"Toque em uma moeda para converter os saldos":`1 ${NM[cur]} = ${R(RATE[cur])}${live?"":" (cotação de exemplo)"}`}</div>
  <div class="acts">${[["plus","Gasto","a"],["cart","Compras","5"],["target","Metas","6"],["swap","Dividir","x"]].map(([i,l,k])=>`<button data-a="${k}"><span>${ico(i,22)}</span>${l}</button>`).join("")}</div>
@@ -143,7 +181,7 @@ function home(){const a=items(mi),F=sum(a,x=>x.k=="f"),P=sum(a,x=>x.k=="p"),Vv=s
  <section class="card"><div class="hd"><h2>Câmbio</h2><span>${live?"ao vivo":"exemplo"}</span></div>${["USD","EUR","GBP"].map(c=>`<div class="lg"><span>${NM[c]}${S.alr[c]?`<br><small style="color:var(--m)">aviso em ${R(S.alr[c])}${RATE[c]<=S.alr[c]?" (atingido)":""}</small>`:""}</span><b>${R(RATE[c])}</b><button class="tr" data-al="${c}" aria-label="Aviso de câmbio" style="${S.alr[c]?"background:var(--li);color:#111310":""}">${ico("bell",18)}</button></div>`).join("")}</section>
  ${S.metas.length?`<section class="card"><div class="hd"><h2>Metas</h2><span class="rw" data-a="6">ver todas</span></div><div class="gs">${S.metas.map(g=>`<div class="g rw" data-a="6"><div>${ico("target",22)}</div><b>${E(g.n)}</b><div class="pb"><i data-w="${Math.min(100,g.g/g.a*100)}%"></i></div><small>${M(g.g)} de ${M(g.a)}</small></div>`).join("")}</div></section>`:""}`;
  if(cc==null)$("bg").textContent="R$ —";else if(hide)$("bg").textContent="R$ ••••••";else cu($("bg"),cc);
- nav();$("eye").onclick=()=>{hide=!hide;S.prefs[0]=hide?1:0;home()};$("ed").onclick=saldoSheet;$("av").onclick=()=>{tab=4;go()};
+ nav();$("eye").onclick=()=>{hide=!hide;S.prefs[0]=hide?1:0;home()};$("ed").onclick=saldoSheet;$("rendCard").onclick=cdiSheet;$("av").onclick=()=>{tab=4;go()};
  if($("ob1")){$("ob1").onclick=saldoSheet;$("ob2").onclick=()=>{tab=2;go()}}
  const car=$("car");car.onscroll=()=>{const i=Math.min(2,Math.round(car.scrollLeft/(car.clientWidth+12)));document.querySelectorAll(".dots i").forEach((d,k)=>d.classList.toggle("on",k==i))};
  document.querySelectorAll("[data-cu]").forEach(b=>b.onclick=()=>{cur=b.dataset.cu;home()});
@@ -157,6 +195,9 @@ function home(){const a=items(mi),F=sum(a,x=>x.k=="f"),P=sum(a,x=>x.k=="p"),Vv=s
   $("aok").onclick=()=>{const v=num($("av2").value);if(!(v>0))return toast("Informe um valor");S.alr[c]=v;cl();home()};if($("arm"))$("arm").onclick=()=>{delete S.alr[c];cl();home()}});
  anim()}
 const avb=()=>`<button class="av" id="av" aria-label="Abrir perfil">${S.photo?`<img src="${S.photo}" alt="">`:E(((S.user.n||"K")[0]||"K").toUpperCase())}</button>`;
+function cdiSheet(){
+ sheet(`<h2 style="margin-bottom:4px">Rendimento estimado</h2><p style="color:var(--m);margin:0 0 14px">Sua conta corrente e sua caixinha rendem 120% do CDI. Informe o CDI atual (ao ano) para a estimativa ficar certa; atualize de vez em quando.</p><small style="color:var(--m)">CDI atual (% ao ano)</small><input id="cdi1" inputmode="decimal" value="${String(CDI).replace(".",",")}"><button class="go" id="cdiok">Salvar</button>`);
+ $("cdiok").onclick=()=>{const v=num($("cdi1").value);if(!(v>0))return toast("Informe um valor");CDI=v;cl();go();toast("Taxa atualizada")}}
 function saldoSheet(){const v=x=>x==null?"":String(x).replace(".",",");sheet(`<h2 style="margin-bottom:4px">Atualizar saldos</h2><p style="color:var(--m);margin:0 0 14px">Informe quanto você tem hoje. Atualize quando quiser.</p><small style="color:var(--m)">Conta corrente</small><input id="s1" inputmode="decimal" value="${v(S.saldo.cc)}"><small style="color:var(--m)">Vale-alimentação</small><input id="s2" inputmode="decimal" value="${v(S.saldo.vale)}"><small style="color:var(--m)">Caixinhas</small><input id="s3" inputmode="decimal" value="${v(S.saldo.cx)}"><small style="color:var(--m)">Investimentos</small><input id="s4" inputmode="decimal" value="${v(S.saldo.inv)}"><button class="go" id="sk">Salvar</button>`);
  $("sk").onclick=()=>{const n=id=>{const x=num($(id).value);return isNaN(x)?null:x};S.saldo={cc:n("s1"),vale:n("s2"),cx:n("s3")||0,inv:n("s4")||0};cl();go();toast("Saldos atualizados")}}
 function list(){const l=items(mi).filter(pass),n=fp.length+fb.length+fc.length,tags=[...fp.map(v=>["p",v]),...fb.map(v=>["b",v]),...fc.map(v=>["c",v])];
@@ -267,7 +308,7 @@ let ready=false,last="",lastT=0,inn=false;
 window.onSyncErr=e=>toast("Não foi possível sincronizar: "+(e.code||e.message));
 window.onAuth=(u,json,t)=>{
  if(!u){ready=false;inn=false;document.body.classList.add("out");login();return}
- if(!inn){inn=true;document.body.classList.remove("out");if(json){try{load(json)}catch(e){S=blank()}}
+ if(!inn){inn=true;document.body.classList.remove("out");if(json){try{load(json)}catch(e){S=blank()}}else{S=seed()}
   S.user.n=S.user.n||(u.displayName||"").split(" ")[0]||(u.email||"").split("@")[0];S.user.e=S.user.e||u.email||"";hide=!!S.prefs[0];mi=CM;tab=0;last=snap();ready=true;go();if(!json||JSON.parse(json).ver!=2)setTimeout(()=>{last=snap();lastT=Date.now();FB.save(last)},0);return}
  if(json&&json!==last&&snap()===last&&!(t&&t<lastT)){try{load(json);last=snap();go()}catch(e){}}};
 setInterval(()=>{if(!ready||!window.FB)return;const x=snap();if(x!==last){last=x;lastT=Date.now();FB.save(x)}},1500);
