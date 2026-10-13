@@ -100,19 +100,19 @@ function seed(){
  o.bks=["Nubank","Mercado Pago"];
  o.saldo={cc:1472.94,vale:12.16,cx:555.83,inv:533.31};
  o.vd={"Mercado Pago":9};
- const recD=(n,v,dia,m,c,b,jf)=>{const r={id:uid(),n,dia,b,ini:CM,fim:null,h:[[CM,v]],m,c};if(jf)r.jf=jf;o.rec.push(r)};
+ const recD=(n,v,dia,m,c,b,jf,n0)=>{const r={id:uid(),n,dia,b,ini:CM,fim:null,h:[[CM,v]],m,c};if(jf)r.jf=jf;if(n0)r.n0=CM;o.rec.push(r)};
  recD("Aluguel",815.38,10,"Pix","Moradia","");
  recD("Internet",99.99,15,"Débito","Moradia","");
  recD("Água",75,10,"Débito","Moradia","");
  recD("Luz",100,10,"Débito","Moradia","");
  recD("Vivo",38,9,"Crédito","Assinaturas","Mercado Pago",CM);
  recD("MEI",86,12,"Pix","Impostos","");
- recD("Pacote Adobe",80,5,"Crédito","Assinaturas","");
+ recD("Pacote Adobe",80,5,"Crédito","Assinaturas","Nubank",0,1);
  recD("Nubank+",29,9,"Crédito","Assinaturas","Nubank",CM);
- recD("Plano de saúde",33.40,5,"Débito","Saúde","");
- recD("iCloud",5.90,5,"Crédito","Assinaturas","");
- recD("FAAP",203.25,5,"Débito","Outros","");
- recD("Google One",4.50,5,"Crédito","Assinaturas","");
+ recD("Plano de saúde",33.40,5,"Crédito","Saúde","Nubank",0,1);
+ recD("iCloud",5.90,5,"Crédito","Assinaturas","Nubank",0,1);
+ recD("FAAP",203.25,5,"Crédito","Outros","Nubank",0,1);
+ recD("Google One",4.50,5,"Crédito","Assinaturas","Nubank",0,1);
  recD("Claude",108.05,9,"Crédito","Assinaturas","Mercado Pago",CM);
  o.ent.push({id:uid(),n:"Ticket Alimentação",dia:20,b:"",t:"vale",ini:CM,fim:null,h:[[CM,740.82]]});
  o.ent.push({id:uid(),n:"Salário",dia:7,b:"",t:"cc",ini:CM,fim:null,h:[[CM,4304.02]]});
@@ -137,7 +137,7 @@ let CDI=13.65,TD_TAXA=null;const rendMes=(v,pctCDI)=>v*(Math.pow(1+(CDI*pctCDI/1
 const uid=()=>Math.random().toString(36).slice(2,9),snap=()=>JSON.stringify(S);
 const dtv=m=>{const p=n=>String(n).padStart(2,"0");return m==CM?`${T0.getFullYear()}-${p(T0.getMonth()+1)}-${p(TD)}`:`${Math.floor(m/12)}-${p(m%12+1)}-01`};
 const nfOf=(b,d)=>{const c=(S.fcd||{})[b];return c==null||d>=c?1:0};
-const load=j=>{const o=JSON.parse(j);if(o.ver==2)S=Object.assign(blank(),o);else{S=blank();S.user=o.user||S.user;S.photo=o.photo||null;S.prefs=o.prefs||S.prefs;S.bks=o.BKS||[];S.compras=(o.SHP||[]).map(x=>({id:uid(),n:x[0],ok:!!x[1]}))}(S.lan||[]).forEach(x=>{if(x.nf===undefined)x.nf=(x.mes==CM&&x.m=="Crédito"&&!x.pc)?nfOf(x.b,x.dia):0})};
+const load=j=>{const o=JSON.parse(j);if(o.ver==2)S=Object.assign(blank(),o);else{S=blank();S.user=o.user||S.user;S.photo=o.photo||null;S.prefs=o.prefs||S.prefs;S.bks=o.BKS||[];S.compras=(o.SHP||[]).map(x=>({id:uid(),n:x[0],ok:!!x[1]}))}(S.lan||[]).forEach(x=>{if(x.nf===undefined)x.nf=(x.mes==CM&&x.m=="Crédito"&&!x.pc)?nfOf(x.b,x.dia):0});if(!S.mg2){S.mg2=1;(S.rec||[]).forEach(r=>{if(/^(pacote adobe|icloud|google one|plano de sa[uú]de|faap)$/i.test(r.n)&&!r.b){r.m="Crédito";r.b="Nubank";if(r.ini==CM&&!r.jf)r.n0=CM}})}};
 const fmt=(v,c)=>c=="BRL"?R(v):new Intl.NumberFormat("pt-BR",{style:"currency",currency:c}).format(v/RATE[c]),M=v=>fmt(v,cur),H=v=>hide?"••••":M(v);
 const sum=(a,f)=>a.filter(f).reduce((s,x)=>s+x.v,0),val=(r,m)=>{let v=r.h[0][1];for(const [d,x] of r.h)if(d<=m)v=x;return v},act=(r,m)=>m>=r.ini&&(r.fim==null||m<=r.fim),ovk=(k,id,m)=>S.ov[k+id+"|"+m]||{};
 const items=(m,all)=>{const o=[];S.rec.filter(r=>act(r,m)).forEach(r=>{const w=ovk("r",r.id,m);if(w.skip||(r.jf==m&&!all))return;o.push({id:r.id,n:r.n,m:r.m,c:r.c,b:r.b,v:w.v!=null?w.v:val(r,m),k:"f",p:m<CM||!!w.p,dia:r.dia,rec:1,n0:r.n0,ts:r.ts})});
@@ -224,12 +224,14 @@ function cdiSheet(){
  $("cdiok").onclick=()=>{const v=num($("cdi1").value);if(!(v>0))return toast("Informe um valor");CDI=v;cl();go();toast("Taxa atualizada")}}
 function saldoSheet(){const v=x=>x==null?"":String(x).replace(".",",");sheet(`<h2 style="margin-bottom:4px">Atualizar saldos</h2><p style="color:var(--m);margin:0 0 14px">Informe quanto você tem hoje. Atualize quando quiser.</p><small style="color:var(--m)">Conta corrente</small><input id="s1" inputmode="decimal" value="${v(S.saldo.cc)}"><small style="color:var(--m)">Vale-alimentação</small><input id="s2" inputmode="decimal" value="${v(S.saldo.vale)}"><small style="color:var(--m)">Caixinhas</small><input id="s3" inputmode="decimal" value="${v(S.saldo.cx)}"><small style="color:var(--m)">Investimentos</small><input id="s4" inputmode="decimal" value="${v(S.saldo.inv)}"><button class="go" id="sk">Salvar</button>`);
  $("sk").onclick=()=>{const n=id=>{const x=num($(id).value);return isNaN(x)?null:x};S.saldo={cc:n("s1"),vale:n("s2"),cx:n("s3")||0,inv:n("s4")||0};cl();go();toast("Saldos atualizados")}}
-function listRows(){const l=items(mi).filter(pass),n=fp.length+fb.length+fc.length;
- $("lrows").innerHTML=`<div class="lh">${l.length} lançamentos, ${R(sum(l,()=>true))}</div>`+(l.map((x,i)=>rowH(x,i,`data-id="${x.id}" data-rec="${x.rec?1:0}"`)).join("")||`<p style="color:var(--m)">${n||qs?"Nenhum gasto encontrado.":"Nenhum gasto neste mês. Use o + para adicionar."}</p>`);
+let sel=null;const kx=x=>x.id+(x.rec?"r":x.fat?"f":"");
+function listRows(){const l=items(mi).filter(pass),n=fp.length+fb.length+fc.length,ss=sel?l.filter(x=>sel.has(kx(x))):[];
+ $("lrows").innerHTML=`<div class="lh">${sel?(ss.length?`${ss.length} ${ss.length>1?"selecionados":"selecionado"}: <b style="color:var(--t)">${H(sum(ss,()=>true))}</b>`:"Toque nos gastos para somar")+` · <a id="sall" style="text-decoration:underline">selecionar todos</a>`:`${l.length} lançamentos, ${R(sum(l,()=>true))}`}</div>`+(l.map((x,i)=>rowH(x,i,`data-id="${x.id}" data-rec="${x.rec?1:0}"`)).join("")||`<p style="color:var(--m)">${n||qs?"Nenhum gasto encontrado.":"Nenhum gasto neste mês. Use o + para adicionar."}</p>`);
+ if(sel){if($("sall"))$("sall").onclick=()=>{l.forEach(x=>sel.add(kx(x)));listRows()};document.querySelectorAll("[data-id]").forEach(r=>{const x=l.find(y=>y.id==r.dataset.id&&!!y.rec==(r.dataset.rec=="1"));if(x&&sel.has(kx(x)))r.style.outline="2px solid var(--li)";r.onclick=()=>{const k=kx(x);sel.has(k)?sel.delete(k):sel.add(k);listRows()}});return}
  document.querySelectorAll("[data-id]").forEach(r=>r.onclick=()=>{const x=l.find(y=>y.id==r.dataset.id&&!!y.rec==(r.dataset.rec=="1"));if(x.fat)fatAtual(S.fat.find(y=>y.id==x.id));else if(x.rec)recMonth(x,"d");else openAdd(S.lan.find(y=>y.id==x.id))})}
 function list(){const n=fp.length+fb.length+fc.length,tags=[...fp.map(v=>["p",v]),...fb.map(v=>["b",v]),...fc.map(v=>["c",v])];
- $("app").innerHTML=`<div class="top"><h1>Gastos</h1>${mp()}</div>${subTabs("Gastos","Contas",0)}<input id="qs" type="search" inputmode="search" autocomplete="off" placeholder="Buscar gasto (nome, categoria, banco, valor)" value="${E(qs)}" style="margin-bottom:8px"><div class="chips" style="margin-bottom:8px"><button class="chip on" id="fo" style="display:flex;align-items:center;gap:6px">${ico("filter",16)} Filtros${n?` (${n})`:""}</button>${tags.map(([k,v])=>`<button class="chip" data-r="${k}" data-v="${E(v)}">${E(v)} ×</button>`).join("")}</div><div id="lrows"></div>`;
- $("fo").onclick=openF;nav();listRows();$("qs").oninput=e=>{qs=e.target.value;listRows()};
+ $("app").innerHTML=`<div class="top"><h1>Gastos</h1>${mp()}</div>${subTabs("Gastos","Contas",0)}<input id="qs" type="search" inputmode="search" autocomplete="off" placeholder="Buscar gasto (nome, categoria, banco, valor)" value="${E(qs)}" style="margin-bottom:8px"><div class="chips" style="margin-bottom:8px"><button class="chip on" id="fo" style="display:flex;align-items:center;gap:6px">${ico("filter",16)} Filtros${n?` (${n})`:""}</button><button class="chip ${sel?"on":""}" id="smb">Somar</button>${tags.map(([k,v])=>`<button class="chip" data-r="${k}" data-v="${E(v)}">${E(v)} ×</button>`).join("")}</div><div id="lrows"></div>`;
+ $("fo").onclick=openF;$("smb").onclick=()=>{sel=sel?null:new Set();list()};nav();listRows();$("qs").oninput=e=>{qs=e.target.value;listRows()};
  document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const a={p:fp,b:fb,c:fc}[b.dataset.r];a.splice(a.indexOf(b.dataset.v),1);list()})}
 const pass=x=>(!fp.length||fp.includes(x.m))&&(!fb.length||fb.includes(x.b))&&(!fc.length||fc.includes(x.c))&&(!qs||nrm([x.n,x.c,x.m,x.b,x.pc,R(x.v)].join(" ")).includes(nrm(qs)));
 function openF(){const G3=[["Forma de pagamento",["Crédito","Débito","Vale","Pix"],fp],["Instituição",S.bks,fb],["Categoria",Object.keys(CAT),fc]],cnt=()=>`Ver ${items(mi).filter(pass).length} gastos`;
@@ -329,7 +331,7 @@ function openAdd(x,pre){const ed=!!x,D=()=>{if(pre&&pre.done)pre.done()};let c=e
  if(ed)$("dl").onclick=()=>delLan(items(mi).find(y=>y.id==x.id)||x)}
 const barTab=t=>t==2?1:t==6?5:t==4?3:t;
 const subTabs=(a,b,c)=>`<div class="sg" style="margin-bottom:12px;background:var(--c)">${[a,b].map((l,i)=>`<button type="button" class="${i==c?"on":""}" data-sub="${i}">${l}</button>`).join("")}</div>`;
-function go(){if(tab!=1)qs="";[home,list,contas,mais,profile,shop,goals][tab]();
+function go(){if(tab!=1){qs="";sel=null}[home,list,contas,mais,profile,shop,goals][tab]();
  const pr=tab==1||tab==2?[1,2]:tab==5||tab==6?[5,6]:null;if(pr)document.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{tab=pr[+b.dataset.sub];go()});
  document.querySelectorAll(".tab [data-t]").forEach(b=>b.classList.toggle("on",+b.dataset.t==barTab(tab)));window.scrollTo(0,0)}
 document.querySelectorAll(".tab [data-t]").forEach((b,i)=>{b.onclick=()=>{tab=+b.dataset.t;go()};b.querySelector("span").innerHTML=ico(["home","list","cart","more"][i],22)});
