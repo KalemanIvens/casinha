@@ -94,7 +94,7 @@ const MS=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto"
 const ML=m=>MS[m%12]+" "+Math.floor(m/12),MH=m=>MS[m%12]+(Math.floor(m/12)==T0.getFullYear()?"":" "+Math.floor(m/12));
 const CAT={Moradia:["home"],Assinaturas:["repeat"],Mercado:["cart"],Restaurante:["fork"],Compras:["bag"],Transporte:["car"],Lazer:["play"],Saúde:["heart"],Impostos:["receipt"],Outros:["more"]};
 const TP={f:["Recorrentes","var(--t)"],p:["Parcelas","#c8f03c"],v:["Avulsos","#a3a99a"]},NM={USD:"Dólar",EUR:"Euro",GBP:"Libra"};
-const blank=()=>({ver:2,user:{n:"",e:"",t:""},photo:null,prefs:[0,1,1],bks:[],vd:{},saldo:{cc:null,vale:null,cx:0,inv:0},rec:[],ent:[],lan:[],ea:[],ov:{},metas:[],compras:[],alr:{},fat:[],hist:{},fch:0,rd:{}});
+const blank=()=>({ver:2,user:{n:"",e:"",t:""},photo:null,prefs:[0,1,1],bks:[],vd:{},saldo:{cc:null,vale:null,cx:0,inv:0},rec:[],ent:[],lan:[],ea:[],ov:{},metas:[],compras:[],alr:{},fat:[],hist:{},fch:0,rd:{},fcd:{"Mercado Pago":2,"Nubank":4}});
 function seed(){
  const o=blank();
  o.bks=["Nubank","Mercado Pago"];
@@ -135,13 +135,14 @@ function seed(){
 let S=blank(),mi=CM,tab=0,mode="Colunas",fp=[],fb=[],fc=[],cur="BRL",hide=false,RATE={USD:5.4,EUR:6.25,GBP:7.3},live=false;
 let CDI=13.65,TD_TAXA=null;const rendMes=(v,pctCDI)=>v*(Math.pow(1+(CDI*pctCDI/100)/100,1/12)-1);
 const uid=()=>Math.random().toString(36).slice(2,9),snap=()=>JSON.stringify(S);
-const load=j=>{const o=JSON.parse(j);if(o.ver==2)S=Object.assign(blank(),o);else{S=blank();S.user=o.user||S.user;S.photo=o.photo||null;S.prefs=o.prefs||S.prefs;S.bks=o.BKS||[];S.compras=(o.SHP||[]).map(x=>({id:uid(),n:x[0],ok:!!x[1]}))}};
+const nfOf=(b,d)=>d<(S.fcd||{})[b]?1:0;
+const load=j=>{const o=JSON.parse(j);if(o.ver==2)S=Object.assign(blank(),o);else{S=blank();S.user=o.user||S.user;S.photo=o.photo||null;S.prefs=o.prefs||S.prefs;S.bks=o.BKS||[];S.compras=(o.SHP||[]).map(x=>({id:uid(),n:x[0],ok:!!x[1]}))}(S.lan||[]).forEach(x=>{if(x.nf===undefined)x.nf=(x.mes==CM&&x.m=="Crédito"&&!x.pc)?nfOf(x.b,x.dia):0})};
 const fmt=(v,c)=>c=="BRL"?R(v):new Intl.NumberFormat("pt-BR",{style:"currency",currency:c}).format(v/RATE[c]),M=v=>fmt(v,cur),H=v=>hide?"••••":M(v);
 const sum=(a,f)=>a.filter(f).reduce((s,x)=>s+x.v,0),val=(r,m)=>{let v=r.h[0][1];for(const [d,x] of r.h)if(d<=m)v=x;return v},act=(r,m)=>m>=r.ini&&(r.fim==null||m<=r.fim),ovk=(k,id,m)=>S.ov[k+id+"|"+m]||{};
-const items=(m,all)=>{const o=[];S.rec.filter(r=>act(r,m)).forEach(r=>{const w=ovk("r",r.id,m);if(w.skip||(r.jf==m&&!all))return;o.push({id:r.id,n:r.n,m:r.m,c:r.c,b:r.b,v:w.v!=null?w.v:val(r,m),k:"f",p:m<CM||!!w.p,dia:r.dia,rec:1,n0:r.n0})});
- S.lan.filter(x=>x.mes==m).forEach(x=>o.push({id:x.id,n:x.n,m:x.m,c:x.c,b:x.b,v:x.v,k:x.pc?"p":"v",p:1,dia:x.dia,pc:x.pc,gid:x.gid,dv:x.dv}));(S.fat||[]).filter(x=>x.mes==m).forEach(x=>o.push({id:x.id,n:"Fatura "+x.b,m:"Crédito",c:"Fatura atual",b:x.b,v:x.v,k:"v",p:m<CM||!!S.ov["f"+x.b+"|"+m],dia:S.vd[x.b],fat:1}));return o};
+const items=(m,all)=>{const o=[];S.rec.filter(r=>act(r,m)).forEach(r=>{const w=ovk("r",r.id,m);if(w.skip||(r.jf==m&&!all))return;o.push({id:r.id,n:r.n,m:r.m,c:r.c,b:r.b,v:w.v!=null?w.v:val(r,m),k:"f",p:m<CM||!!w.p,dia:r.dia,rec:1,n0:r.n0,ts:r.ts})});
+ S.lan.filter(x=>x.mes==m).forEach(x=>o.push({id:x.id,n:x.n,m:x.m,c:x.c,b:x.b,v:x.v,k:x.pc?"p":"v",p:1,dia:x.dia,pc:x.pc,gid:x.gid,dv:x.dv,nf:x.nf,ts:x.ts}));(S.fat||[]).filter(x=>x.mes==m).forEach(x=>o.push({id:x.id,n:"Fatura "+x.b,m:"Crédito",c:"Fatura atual",b:x.b,v:x.v,k:"v",p:m<CM||!!S.ov["f"+x.b+"|"+m],dia:S.vd[x.b],fat:1}));return o};
 const ents=m=>[...S.ent.filter(r=>act(r,m)&&!ovk("e",r.id,m).skip).map(r=>{const w=ovk("e",r.id,m);return{id:r.id,n:r.n,b:r.b,t:r.t,v:w.v!=null?w.v:val(r,m),dia:r.dia,rec:1}}),...S.ea.filter(x=>x.mes==m).map(x=>({id:x.id,n:x.n,b:x.b,t:x.t||"cc",v:x.v,dia:x.dia}))];
-const credit=(m,b)=>sum(items(m,1),x=>x.m=="Crédito"&&x.b==b&&!x.fat),fbase=(m,b)=>sum(S.fat||[],x=>x.mes==m&&x.b==b),fats=m=>S.bks.map(b=>({b,v:credit(m-1,b)+fbase(m,b)+sum(items(m),x=>x.m=="Crédito"&&x.b==b&&x.n0==m&&!x.fat),ab:credit(m,b),p:m<CM||!!S.ov["f"+b+"|"+m]})).filter(x=>x.v||x.ab);
+const credit=(m,b)=>sum(items(m,1),x=>x.m=="Crédito"&&x.b==b&&!x.fat&&!x.nf),fbase=(m,b)=>sum(S.fat||[],x=>x.mes==m&&x.b==b),fats=m=>S.bks.map(b=>({b,v:credit(m-1,b)+fbase(m,b)+sum(items(m),x=>x.m=="Crédito"&&x.b==b&&x.n0==m&&!x.fat)+sum(items(m),x=>x.nf&&x.m=="Crédito"&&x.b==b),ab:credit(m,b),p:m<CM||!!S.ov["f"+b+"|"+m]})).filter(x=>x.v||x.ab);
 const pagar=m=>m<CM?0:sum(items(m),x=>x.rec&&(x.m=="Pix"||x.m=="Débito")&&!x.p)+fats(m).filter(x=>!x.p).reduce((t,x)=>t+x.v,0);
 const aRec=m=>m<CM?0:ents(m).filter(e=>e.t=="cc"&&e.rec&&(m>CM||e.dia>TD)).reduce((t,e)=>t+e.v,0);
 const cl=()=>sh.classList.remove("on"),sh=$("sh"),shb=$("shb"),sheet=h=>{shb.innerHTML=h;sh.classList.add("on")};sh.onclick=e=>{if(e.target===sh)cl()};
@@ -181,7 +182,8 @@ function reaj(){const o=[];if(mi!=CM)return"";S.rd=S.rd||{};
   const last=h[h.length-1][0],k2=r.id+"|a"+CM;if(/alugu|plano de sa|mensalid|faap|condom/i.test(r.n)&&h.length>0&&last<=CM-12&&!S.rd[k2])o.push({key:k2,n:r.n,anos:Math.floor((CM-last)/12)})}));
  if(!o.length)return"";
  return `<section class="card"><div class="hd"><h2>Reajustes</h2></div>${o.map(x=>`<div class="lg"><span>${E(x.n)}<br><small style="color:var(--m)">${x.anos?`sem reajuste há ${x.anos} ${x.anos>1?"anos":"ano"}, vale conferir o valor`:`${x.pa>x.de?"subiu":"caiu"} de ${R(x.de)} para ${R(x.pa)} (${x.pa>x.de?"+":"−"}${Math.abs(Math.round((x.pa-x.de)/x.de*1000)/10).toString().replace(".",",")}%)`}</small></span><button class="xs" data-rd="${E(x.key)}">Ok</button></div>`).join("")}</section>`}
-const rowH=(x,i,at)=>`<div class="row rw" ${at} style="animation-delay:${Math.min(i,12)*35}ms"><div class="ic" ${x.b?`style="background:${bt(x.b)}"`:""}>${ico(ci(x.c))}</div><div class="n"><div>${E(x.n)}</div><small>${[x.c,x.m,x.b].filter(Boolean).map(E).join(", ")}${x.pc?", parcela "+x.pc:""}</small></div><div class="v">${R(x.v)}<small>${x.rec||x.fat?(x.p?"pago":"a pagar"):"&nbsp;"}</small></div></div>`;
+const tsf=t=>{const d=new Date(t),p=n=>String(n).padStart(2,"0");return `${p(d.getDate())}/${p(d.getMonth()+1)} às ${p(d.getHours())}:${p(d.getMinutes())}`};
+const rowH=(x,i,at)=>`<div class="row rw" ${at} style="animation-delay:${Math.min(i,12)*35}ms"><div class="ic" ${x.b?`style="background:${bt(x.b)}"`:""}>${ico(ci(x.c))}</div><div class="n"><div>${E(x.n)}</div><small>${[x.c,x.m,x.b].filter(Boolean).map(E).join(", ")}${x.pc?", parcela "+x.pc:""}${x.ts?`<br><span style="opacity:.75">Adicionado em ${tsf(x.ts)}</span>`:""}</small></div><div class="v">${R(x.v)}<small>${x.rec||x.fat?(x.p?"pago":"a pagar"):"&nbsp;"}</small></div></div>`;
 function home(){S.hist=S.hist||{};S.hist[CM]={g:(S.saldo.cx||0)+(S.saldo.inv||0)};const a=items(mi),F=sum(a,x=>x.k=="f"),P=sum(a,x=>x.k=="p"),Vv=sum(a,x=>x.k=="v"),T=F+P+Vv,A=pagar(mi),cc=S.saldo.cc,en=ents(mi),EN=en.reduce((t,x)=>t+x.v,0),Sb=cc==null?null:cc-A+aRec(mi),_pas=ents(CM).filter(e=>e.t=="cc"&&e.rec&&e.dia<=TD).map(e=>e.id),SAL=mi==CM?ents(CM+1).filter(e=>_pas.includes(e.id)).reduce((t,e)=>t+e.v,0):0,valeG=sum(a,x=>x.m=="Vale"),ENc=en.filter(x=>x.t!="vale").reduce((t,x)=>t+x.v,0),ENv=EN-ENc,Tc=T-valeG,vn=S.ent.filter(r=>r.t=="vale"&&act(r,mi))[0],byB=S.bks.map(b=>[b,sum(a,x=>x.b==b)]).filter(x=>x[1]>0).sort((p,q)=>q[1]-p[1]),fa=fats(mi),pc=v=>T?Math.round(v/T*100):0,
  up=mi==CM?a.filter(x=>x.rec&&!x.p&&x.dia&&x.dia<=TD+7).sort((p,q)=>p.dia-q.dia):[];
  $("app").innerHTML=`<div class="hd0">${avb()}<div><small>Bom dia</small><b>${E(S.user.n||"")}</b></div>${mp()}</div>
@@ -246,7 +248,7 @@ function recForm(k,r){const ed=!!r;let pm=ed?r.m:"Crédito",bk=ed?r.b:(S.bks[0]|
  const dk=()=>{$("kr").innerHTML=(k=="d"?mm.map(m=>`<button type="button" class="chip ${m==pm?"on":""}" data-pm="${m}">${m}</button>`):[["cc","Conta corrente"],["vale","Vale-alimentação"]].map(([v,l])=>`<button type="button" class="chip ${v==t?"on":""}" data-pm="${v}">${l}</button>`)).join("");shb.querySelectorAll("[data-pm]").forEach(b=>b.onclick=()=>{if(k=="d")pm=b.dataset.pm;else t=b.dataset.pm;dk()})};dk();bankPick($("bkr"),()=>bk,v=>bk=v);
  $("rs").onclick=()=>{let rj="";const n=$("rn").value.trim(),v=num($("rv").value),d=parseInt($("rd").value)||null;if(!n||isNaN(v)||v<0)return toast("Informe nome e valor");if(d&&(d<1||d>31))return toast("O dia vai de 1 a 31");
   if(ed){r.n=n;r.dia=d;r.b=bk;if(k=="d"){r.m=pm;r.c=$("rc").value}else r.t=t;if(v!==val(r,mi)){const ov0=val(r,mi);r.h=r.h.filter(x=>x[0]<mi);r.h.push([mi,v]);if(ov0>0)rj=`${n} ${v>ov0?"subiu":"caiu"} ${Math.abs(Math.round((v-ov0)/ov0*1000)/10).toString().replace(".",",")}% (de ${R(ov0)} para ${R(v)})`}}
-  else{const rcv=k=="d"?$("rc").value:null,mk=(ini,jf,n0)=>{const o={id:uid(),n,dia:d,b:bk,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(n0)o.n0=ini;if(k=="d"){o.m=pm;o.c=rcv;S.rec.push(o)}else{o.t=t;S.ent.push(o)}cl();go();toast("Salvo")};
+  else{const rcv=k=="d"?$("rc").value:null,mk=(ini,jf,n0)=>{const o={id:uid(),ts:Date.now(),n,dia:d,b:bk,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(n0)o.n0=ini;if(k=="d"){o.m=pm;o.c=rcv;S.rec.push(o)}else{o.t=t;S.ent.push(o)}cl();go();toast("Salvo")};
    if(k=="d"&&pm=="Crédito"&&mi==CM)return startAsk(n,bk,mk);mk(mi);return}
   cl();go();toast(rj||"Salvo")};
  if(ed){$("re").onclick=()=>{if(act(r,mi))r.fim=mi-1;else r.fim=null;cl();go()};
@@ -267,6 +269,8 @@ function fatAtual(f){const ed=!!f;let bk=ed?f.b:(S.bks[0]||"");
   S.fat=S.fat||[];if(ed){f.b=bk;f.v=v}else{const ex=S.fat.find(y=>y.b==bk&&y.mes==mi);if(ex)ex.v=v;else S.fat.push({id:uid(),b:bk,mes:mi,v})}
   cl();go();toast("Fatura salva")};
  if(ed)$("fdl").onclick=()=>conf2("Excluir fatura atual?","Fatura "+E(f.b)+" sai da conta deste mês.","Excluir",()=>{S.fat=S.fat.filter(y=>y.id!=f.id);go();toast("Excluída")})}
+function askClose(b,cb){sheet(`<h2 style="margin-bottom:6px">Quando fecha a fatura do ${E(b)}?</h2><p style="color:var(--m);margin:0 0 16px">Compras no crédito antes desse dia entram na fatura do mês. Do dia do fechamento em diante, vão para a do mês seguinte.</p><input id="fcz" inputmode="numeric" placeholder="Dia do fechamento (1 a 31)"><button class="go" id="fcok" style="margin-top:8px">Continuar</button>`);
+ $("fcok").onclick=()=>{const n=parseInt($("fcz").value);if(!n||n<1||n>31)return toast("Informe um dia de 1 a 31");(S.fcd=S.fcd||{})[b]=n;cl();cb()}}
 function startAsk(n,b,cb){const nx=MH(mi+1);
  sheet(`<h2 style="margin-bottom:6px">Quando ${E(n)} começa a contar?</h2><p style="color:var(--m);margin:0 0 16px">É no crédito${b?", no "+E(b):""}. Se a fatura atual já tem essa cobrança, somar de novo contaria em dobro.</p><div style="display:flex;flex-direction:column;gap:8px"><button class="go gh" id="q1">Já está na fatura atual</button><button class="go gh" id="q2">Ainda não está, somar já em ${MH(mi)}</button><button class="go gh" id="q3">Começar só em ${nx}</button></div>`);
  $("q1").onclick=()=>{cl();cb(mi,mi)};$("q2").onclick=()=>{cl();cb(mi,0,1)};$("q3").onclick=()=>{cl();cb(mi+1)}}
@@ -312,13 +316,15 @@ function openAdd(x,pre){const ed=!!x,D=()=>{if(pre&&pre.done)pre.done()};let c=e
  const dp=()=>{$("pmr").innerHTML=tipo=="g"?["Crédito","Débito","Vale","Pix"].map(m=>`<button type="button" class="chip ${m==pm?"on":""}" data-pm="${m}">${m}</button>`).join(""):[["cc","Conta corrente"],["vale","Vale-alimentação"]].map(([v,l])=>`<button type="button" class="chip ${v==et?"on":""}" data-pm="${v}">${l}</button>`).join("");shb.querySelectorAll("[data-pm]").forEach(b=>b.onclick=()=>{if(tipo=="g")pm=b.dataset.pm;else et=b.dataset.pm;dp()})};dp();bankPick($("bkr"),()=>bk,v=>bk=v);
  shb.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k;c=k=="⌫"?Math.floor(c/10):Math.min(c*(k=="00"?100:10)+(k=="00"?0:+k),99999999);$("am").textContent=R(c/100)});
  if(!ed){shb.querySelectorAll("[data-tp]").forEach(b=>b.onclick=()=>{tipo=b.dataset.tp;shb.querySelectorAll("[data-tp]").forEach(y=>y.classList.toggle("on",y==b));shb.querySelectorAll(".gx").forEach(e=>e.style.display=tipo=="e"?"none":"");$("ok").textContent=tipo=="e"?"Adicionar entrada":"Adicionar gasto";dp()});$("rp").onclick=()=>{rep=!rep;$("rp").classList.toggle("on",rep)}}
- $("ok").onclick=()=>{if(!c)return toast("Informe um valor");const v=c/100,d=$("d").value.trim(),cat=$("c").value;
+ const okH=cap=>{if(!c)return toast("Informe um valor");const v=c/100,d=cap?cap.d:$("d").value.trim(),cat=cap?cap.cat:$("c").value,nv=cap?cap.nv:($("n")?$("n").value:"");
+  if(!ed&&tipo=="g"&&pm=="Crédito"&&bk&&(S.fcd=S.fcd||{})[bk]==null)return askClose(bk,()=>okH({d,cat,nv}));
   if(ed){const r=S.lan.find(y=>y.id==x.id);valeBack(r);r.n=d||cat;r.v=v;r.m=pm;r.c=cat;r.b=bk;valeTake(r);cl();go();return toast("Salvo")}
-  if(tipo=="e"){if(rep)S.ent.push({id:uid(),n:d||"Entrada",b:bk,t:et,dia:TD,ini:mi,fim:null,h:[[mi,v]]});else S.ea.push({id:uid(),n:d||"Entrada",b:bk,v,mes:mi,t:et});D();cl();go();return toast(rep?"Entrada recorrente criada":"Entrada adicionada")}
-  const n=pm=="Vale"?1:Math.max(1,parseInt($("n").value)||1);
-  if(rep){const mk=(ini,jf,n0)=>{const o={id:uid(),n:d||cat,m:pm,c:cat,b:bk,dia:TD,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(n0)o.n0=ini;S.rec.push(o);D();cl();go();toast("Despesa recorrente criada")};if(pm=="Crédito"&&mi==CM)return startAsk(d||cat,bk,mk);return mk(mi)}
-  const gid=uid();for(let k=0;k<n;k++){const it={id:uid(),n:d||cat,m:pm,c:cat,b:bk,v:v/n,mes:mi+k,dia:mi==CM?TD:1,gid:n>1?gid:null,pc:n>1?`${k+1}/${n}`:null};valeTake(it);S.lan.push(it)}
+  if(tipo=="e"){if(rep)S.ent.push({id:uid(),ts:Date.now(),n:d||"Entrada",b:bk,t:et,dia:TD,ini:mi,fim:null,h:[[mi,v]]});else S.ea.push({id:uid(),ts:Date.now(),n:d||"Entrada",b:bk,v,mes:mi,t:et});D();cl();go();return toast(rep?"Entrada recorrente criada":"Entrada adicionada")}
+  const n=pm=="Vale"?1:Math.max(1,parseInt(nv)||1);
+  if(rep){const mk=(ini,jf,n0)=>{const o={id:uid(),ts:Date.now(),n:d||cat,m:pm,c:cat,b:bk,dia:TD,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(n0)o.n0=ini;S.rec.push(o);D();cl();go();toast("Despesa recorrente criada")};if(pm=="Crédito"&&mi==CM)return startAsk(d||cat,bk,mk);return mk(mi)}
+  const gid=uid();for(let k=0;k<n;k++){const it={id:uid(),n:d||cat,m:pm,c:cat,b:bk,v:v/n,mes:mi+k,dia:mi==CM?TD:1,gid:n>1?gid:null,pc:n>1?`${k+1}/${n}`:null,ts:Date.now(),nf:(k==0&&pm=="Crédito"&&mi==CM)?nfOf(bk,TD):0};valeTake(it);S.lan.push(it)}
   D();cl();go();toast(n>1?`Parcelado em ${n} meses`:pm=="Vale"&&S.saldo.vale!=null?"Gasto descontado do vale":"Gasto adicionado")};
+ $("ok").onclick=()=>okH();
  if(ed)$("dl").onclick=()=>delLan(items(mi).find(y=>y.id==x.id)||x)}
 const barTab=t=>t==2?1:t==6?5:t==4?3:t;
 const subTabs=(a,b,c)=>`<div class="sg" style="margin-bottom:12px;background:var(--c)">${[a,b].map((l,i)=>`<button type="button" class="${i==c?"on":""}" data-sub="${i}">${l}</button>`).join("")}</div>`;
