@@ -136,10 +136,10 @@ const uid=()=>Math.random().toString(36).slice(2,9),snap=()=>JSON.stringify(S);
 const load=j=>{const o=JSON.parse(j);if(o.ver==2)S=Object.assign(blank(),o);else{S=blank();S.user=o.user||S.user;S.photo=o.photo||null;S.prefs=o.prefs||S.prefs;S.bks=o.BKS||[];S.compras=(o.SHP||[]).map(x=>({id:uid(),n:x[0],ok:!!x[1]}))}};
 const fmt=(v,c)=>c=="BRL"?R(v):new Intl.NumberFormat("pt-BR",{style:"currency",currency:c}).format(v/RATE[c]),M=v=>fmt(v,cur),H=v=>hide?"••••":M(v);
 const sum=(a,f)=>a.filter(f).reduce((s,x)=>s+x.v,0),val=(r,m)=>{let v=r.h[0][1];for(const [d,x] of r.h)if(d<=m)v=x;return v},act=(r,m)=>m>=r.ini&&(r.fim==null||m<=r.fim),ovk=(k,id,m)=>S.ov[k+id+"|"+m]||{};
-const items=(m,all)=>{const o=[];S.rec.filter(r=>act(r,m)).forEach(r=>{const w=ovk("r",r.id,m);if(w.skip||(r.jf==m&&!all))return;o.push({id:r.id,n:r.n,m:r.m,c:r.c,b:r.b,v:w.v!=null?w.v:val(r,m),k:"f",p:m<CM||!!w.p,dia:r.dia,rec:1})});
+const items=(m,all)=>{const o=[];S.rec.filter(r=>act(r,m)).forEach(r=>{const w=ovk("r",r.id,m);if(w.skip||(r.jf==m&&!all))return;o.push({id:r.id,n:r.n,m:r.m,c:r.c,b:r.b,v:w.v!=null?w.v:val(r,m),k:"f",p:m<CM||!!w.p,dia:r.dia,rec:1,n0:r.n0})});
  S.lan.filter(x=>x.mes==m).forEach(x=>o.push({id:x.id,n:x.n,m:x.m,c:x.c,b:x.b,v:x.v,k:x.pc?"p":"v",p:1,dia:x.dia,pc:x.pc,gid:x.gid,dv:x.dv}));(S.fat||[]).filter(x=>x.mes==m).forEach(x=>o.push({id:x.id,n:"Fatura "+x.b,m:"Crédito",c:"Fatura atual",b:x.b,v:x.v,k:"v",p:m<CM||!!S.ov["f"+x.b+"|"+m],dia:S.vd[x.b],fat:1}));return o};
 const ents=m=>[...S.ent.filter(r=>act(r,m)&&!ovk("e",r.id,m).skip).map(r=>{const w=ovk("e",r.id,m);return{id:r.id,n:r.n,b:r.b,t:r.t,v:w.v!=null?w.v:val(r,m),dia:r.dia,rec:1}}),...S.ea.filter(x=>x.mes==m).map(x=>({id:x.id,n:x.n,b:x.b,t:x.t||"cc",v:x.v,dia:x.dia}))];
-const credit=(m,b)=>sum(items(m,1),x=>x.m=="Crédito"&&x.b==b&&!x.fat),fbase=(m,b)=>sum(S.fat||[],x=>x.mes==m&&x.b==b),fats=m=>S.bks.map(b=>({b,v:credit(m-1,b)+fbase(m,b),ab:credit(m,b),p:m<CM||!!S.ov["f"+b+"|"+m]})).filter(x=>x.v||x.ab);
+const credit=(m,b)=>sum(items(m,1),x=>x.m=="Crédito"&&x.b==b&&!x.fat),fbase=(m,b)=>sum(S.fat||[],x=>x.mes==m&&x.b==b),fats=m=>S.bks.map(b=>({b,v:credit(m-1,b)+fbase(m,b)+sum(items(m),x=>x.m=="Crédito"&&x.b==b&&x.n0==m&&!x.fat),ab:credit(m,b),p:m<CM||!!S.ov["f"+b+"|"+m]})).filter(x=>x.v||x.ab);
 const pagar=m=>m<CM?0:sum(items(m),x=>x.rec&&(x.m=="Pix"||x.m=="Débito")&&!x.p)+fats(m).filter(x=>!x.p).reduce((t,x)=>t+x.v,0);
 const aRec=m=>m<CM?0:ents(m).filter(e=>e.t=="cc"&&e.rec&&(m>CM||e.dia>TD)).reduce((t,e)=>t+e.v,0);
 const cl=()=>sh.classList.remove("on"),sh=$("sh"),shb=$("shb"),sheet=h=>{shb.innerHTML=h;sh.classList.add("on")};sh.onclick=e=>{if(e.target===sh)cl()};
@@ -223,7 +223,7 @@ function recForm(k,r){const ed=!!r;let pm=ed?r.m:"Crédito",bk=ed?r.b:(S.bks[0]|
  const dk=()=>{$("kr").innerHTML=(k=="d"?mm.map(m=>`<button type="button" class="chip ${m==pm?"on":""}" data-pm="${m}">${m}</button>`):[["cc","Conta corrente"],["vale","Vale-alimentação"]].map(([v,l])=>`<button type="button" class="chip ${v==t?"on":""}" data-pm="${v}">${l}</button>`)).join("");shb.querySelectorAll("[data-pm]").forEach(b=>b.onclick=()=>{if(k=="d")pm=b.dataset.pm;else t=b.dataset.pm;dk()})};dk();bankPick($("bkr"),()=>bk,v=>bk=v);
  $("rs").onclick=()=>{const n=$("rn").value.trim(),v=num($("rv").value),d=parseInt($("rd").value)||null;if(!n||isNaN(v)||v<0)return toast("Informe nome e valor");if(d&&(d<1||d>31))return toast("O dia vai de 1 a 31");
   if(ed){r.n=n;r.dia=d;r.b=bk;if(k=="d"){r.m=pm;r.c=$("rc").value}else r.t=t;if(v!==val(r,mi)){r.h=r.h.filter(x=>x[0]<mi);r.h.push([mi,v])}}
-  else{const rcv=k=="d"?$("rc").value:null,mk=(ini,jf)=>{const o={id:uid(),n,dia:d,b:bk,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(k=="d"){o.m=pm;o.c=rcv;S.rec.push(o)}else{o.t=t;S.ent.push(o)}cl();go();toast("Salvo")};
+  else{const rcv=k=="d"?$("rc").value:null,mk=(ini,jf,n0)=>{const o={id:uid(),n,dia:d,b:bk,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(n0)o.n0=ini;if(k=="d"){o.m=pm;o.c=rcv;S.rec.push(o)}else{o.t=t;S.ent.push(o)}cl();go();toast("Salvo")};
    if(k=="d"&&pm=="Crédito"&&mi==CM)return startAsk(n,bk,mk);mk(mi);return}
   cl();go();toast("Salvo")};
  if(ed){$("re").onclick=()=>{if(act(r,mi))r.fim=mi-1;else r.fim=null;cl();go()};
@@ -246,7 +246,7 @@ function fatAtual(f){const ed=!!f;let bk=ed?f.b:(S.bks[0]||"");
  if(ed)$("fdl").onclick=()=>conf2("Excluir fatura atual?","Fatura "+E(f.b)+" sai da conta deste mês.","Excluir",()=>{S.fat=S.fat.filter(y=>y.id!=f.id);go();toast("Excluída")})}
 function startAsk(n,b,cb){const nx=MH(mi+1);
  sheet(`<h2 style="margin-bottom:6px">Quando ${E(n)} começa a contar?</h2><p style="color:var(--m);margin:0 0 16px">É no crédito${b?", no "+E(b):""}. Se a fatura atual já tem essa cobrança, somar de novo contaria em dobro.</p><div style="display:flex;flex-direction:column;gap:8px"><button class="go gh" id="q1">Já está na fatura atual</button><button class="go gh" id="q2">Ainda não está, somar já em ${MH(mi)}</button><button class="go gh" id="q3">Começar só em ${nx}</button></div>`);
- $("q1").onclick=()=>{cl();cb(mi,mi)};$("q2").onclick=()=>{cl();cb(mi)};$("q3").onclick=()=>{cl();cb(mi+1)}}
+ $("q1").onclick=()=>{cl();cb(mi,mi)};$("q2").onclick=()=>{cl();cb(mi,0,1)};$("q3").onclick=()=>{cl();cb(mi+1)}}
 function mais(){$("app").innerHTML=`<div class="top"><h1>Mais</h1></div>${[["user","Perfil e preferências","Foto, dados e saldos",4]].map(([i,t,d,k])=>`<div class="row rw" data-go="${k}"><div class="ic">${ico(i)}</div><div class="n"><div>${t}</div><small>${d}</small></div></div>`).join("")}`;document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tab=+b.dataset.go;go()})}
 const sobraInfo=()=>{const cc=S.saldo.cc;if(cc==null)return null;const sb=cc-pagar(CM)+aRec(CM),pas=ents(CM).filter(e=>e.t=="cc"&&e.rec&&e.dia<=TD).map(e=>e.id),sal=ents(CM+1).filter(e=>pas.includes(e.id)).reduce((t,e)=>t+e.v,0);return{sb,sal,tot:sb+sal}};
 function buyItem(id){const x=S.compras.find(y=>y.id==id);if(!x)return;if(x.ok){x.ok=false;shop();return}
@@ -293,7 +293,7 @@ function openAdd(x,pre){const ed=!!x,D=()=>{if(pre&&pre.done)pre.done()};let c=e
   if(ed){const r=S.lan.find(y=>y.id==x.id);valeBack(r);r.n=d||cat;r.v=v;r.m=pm;r.c=cat;r.b=bk;valeTake(r);cl();go();return toast("Salvo")}
   if(tipo=="e"){if(rep)S.ent.push({id:uid(),n:d||"Entrada",b:bk,t:et,dia:TD,ini:mi,fim:null,h:[[mi,v]]});else S.ea.push({id:uid(),n:d||"Entrada",b:bk,v,mes:mi,t:et});D();cl();go();return toast(rep?"Entrada recorrente criada":"Entrada adicionada")}
   const n=pm=="Vale"?1:Math.max(1,parseInt($("n").value)||1);
-  if(rep){const mk=(ini,jf)=>{const o={id:uid(),n:d||cat,m:pm,c:cat,b:bk,dia:TD,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;S.rec.push(o);D();cl();go();toast("Despesa recorrente criada")};if(pm=="Crédito"&&mi==CM)return startAsk(d||cat,bk,mk);return mk(mi)}
+  if(rep){const mk=(ini,jf,n0)=>{const o={id:uid(),n:d||cat,m:pm,c:cat,b:bk,dia:TD,ini,fim:null,h:[[ini,v]]};if(jf)o.jf=jf;if(n0)o.n0=ini;S.rec.push(o);D();cl();go();toast("Despesa recorrente criada")};if(pm=="Crédito"&&mi==CM)return startAsk(d||cat,bk,mk);return mk(mi)}
   const gid=uid();for(let k=0;k<n;k++){const it={id:uid(),n:d||cat,m:pm,c:cat,b:bk,v:v/n,mes:mi+k,dia:mi==CM?TD:1,gid:n>1?gid:null,pc:n>1?`${k+1}/${n}`:null};valeTake(it);S.lan.push(it)}
   D();cl();go();toast(n>1?`Parcelado em ${n} meses`:pm=="Vale"&&S.saldo.vale!=null?"Gasto descontado do vale":"Gasto adicionado")};
  if(ed)$("dl").onclick=()=>delLan(items(mi).find(y=>y.id==x.id)||x)}
