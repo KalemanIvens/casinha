@@ -31,6 +31,7 @@ main{max-width:480px;margin:0 auto;padding:14px 16px 130px;overflow-x:hidden}
 .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}h2{font-size:18px;margin:0;letter-spacing:-.02em}.hd span{color:var(--m);font-weight:600}
 .sg{display:flex;background:var(--bg);border-radius:14px;padding:3px;margin-bottom:14px}.sg button{flex:1;padding:8px;border-radius:11px;font-size:14px;font-weight:600;color:var(--m)}.sg button.on{background:var(--v);color:var(--vt)}
 .viz{min-height:190px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:10px}
+.row.drg{position:relative;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.28);transition:none!important;animation:none!important;opacity:.97}.row.dt{box-shadow:0 -3px 0 0 var(--t)}.row.db{box-shadow:0 3px 0 0 var(--t)}body.dgn{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}body.dgn .row[data-i]{touch-action:none}
 .cols{display:flex;gap:10px;width:100%;align-items:flex-end}.col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}.col b{font-size:13px}.col small{color:var(--m)}
 .cb{width:100%;height:0;border-radius:16px 16px 8px 8px;transition:height 1s cubic-bezier(.2,.8,.2,1)}
 .pie{position:relative;width:176px;height:176px;align-self:center}.pie svg{transform:rotate(-90deg)}.pie circle{fill:none;stroke-width:20;stroke-linecap:round;transition:stroke-dasharray 1s cubic-bezier(.2,.8,.2,1)}.pie div{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.pie small{color:var(--m)}
@@ -470,7 +471,16 @@ function shop(){const C=S.compras,n=C.filter(x=>x.ok).length,pend=C.filter(x=>!x
    sheet(`<h2 style="margin-bottom:6px">Adicionar valor?</h2><p style="color:var(--m);margin:0 0 12px">${E(it.n)} foi salvo. O valor é opcional, mas ajuda na simulação da sobra.</p><input id="cv" inputmode="decimal" placeholder="Valor (R$)"><div style="display:flex;flex-direction:column;gap:8px;margin-top:4px"><button class="go" id="cvk">Adicionar valor</button><button class="go gh" id="cvp">Pular</button></div>`);
    $("cvp").onclick=cl;$("cvk").onclick=()=>{const n=num($("cv").value);if(!(n>0))return toast("Informe um valor");it.v=n;cl();shop();toast("Valor adicionado")}};$("sa").onmousedown=e=>e.preventDefault();
   const del=id=>{const x=S.compras.find(y=>y.id==id);conf2("Excluir item?",E(x.n)+" sai da lista.","Excluir",()=>{S.compras=S.compras.filter(y=>y.id!=id);shop();toast("Item excluído")})};
-  document.querySelectorAll("[data-i]").forEach(r=>{let t,lp=0;r.onpointerdown=()=>{lp=0;if(shSel)return;t=setTimeout(()=>{lp=1;del(r.dataset.i)},550)};["pointerup","pointerleave","pointercancel"].forEach(ev=>r.addEventListener(ev,()=>clearTimeout(t)));r.onclick=()=>{if(lp)return;if(shSel){togSel(r.dataset.i);return}editItem(r.dataset.i)}});
+  document.querySelectorAll("[data-i]").forEach(r=>{let t,lp=0,dg=0,sx=0,sy=0,tg=null,af=0,py=0;
+  const rows=()=>[...document.querySelectorAll("[data-i]")],clr=()=>rows().forEach(e=>e.classList.remove("dt","db")),
+  tick=()=>{if(!dg)return;const h=innerHeight;if(py<90)scrollBy(0,-12);else if(py>h-90)scrollBy(0,12);af=requestAnimationFrame(tick)},
+  mv=(x,y)=>{py=y;r.style.transform=`translate(${x-sx}px,${y-sy}px) scale(1.03)`;r.style.pointerEvents="none";const e=document.elementFromPoint(x,y);r.style.pointerEvents="";const o=e&&e.closest&&e.closest("[data-i]");clr();tg=null;if(o&&o!==r){const b=o.getBoundingClientRect(),a=rows().indexOf(o)>rows().indexOf(r);tg={o,after:a};o.classList.add(a?"db":"dt")}},
+  end=ok=>{clearTimeout(t);if(!dg)return;dg=0;cancelAnimationFrame(af);r.classList.remove("drg");r.style.transform="";clr();document.body.classList.remove("dgn");if(ok&&tg){const C=S.compras,a=C.findIndex(y=>y.id==r.dataset.i),[it]=C.splice(a,1);let b=C.findIndex(y=>y.id==tg.o.dataset.i);if(tg.after)b++;C.splice(b,0,it);shop()}tg=null};
+  r.onpointerdown=e=>{lp=0;if(shSel||(e.target.closest&&e.target.closest("button")))return;sx=e.clientX;sy=e.clientY;t=setTimeout(()=>{lp=1;dg=1;r.classList.add("drg");document.body.classList.add("dgn");if(navigator.vibrate)navigator.vibrate(18);py=sy;tick()},380)};
+  r.addEventListener("pointermove",e=>{if(dg){e.preventDefault();mv(e.clientX,e.clientY)}else if(t&&Math.hypot(e.clientX-sx,e.clientY-sy)>9)clearTimeout(t)});
+  r.addEventListener("touchmove",e=>{if(dg){e.preventDefault();const p=e.touches[0];mv(p.clientX,p.clientY)}},{passive:false});
+  r.addEventListener("pointerup",()=>end(1));r.addEventListener("pointercancel",()=>end(0));r.addEventListener("contextmenu",e=>{if(lp)e.preventDefault()});
+  r.onclick=()=>{if(lp){lp=0;return}if(shSel){togSel(r.dataset.i);return}editItem(r.dataset.i)}});
   document.querySelectorAll("[data-ck]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(shSel)togSel(b.dataset.ck);else buyItem(b.dataset.ck)});
   if($("shs"))$("shs").onclick=()=>{shSel=shSel?null:new Set();shop()};
   if($("shg"))$("shg").onclick=()=>{const L=S.compras.filter(x=>shSel.has(x.id)),T=r2(L.reduce((t,x)=>t+x.v,0));openAdd(undefined,{n:"Compra mercado",v:T,sub:L.map(x=>({n:x.n,v:x.v})),done:()=>{L.forEach(x=>x.ok=true);shSel=null}})};
