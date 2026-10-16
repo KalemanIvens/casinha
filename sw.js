@@ -1,6 +1,6 @@
 // Casinha: service worker simples. Rede primeiro; se estiver sem internet, usa a última cópia guardada.
-const V = "casinha-v1";
-const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+const V = "casinha-v3";
+const CORE = ["./", "index.html", "manifest.webmanifest", "icon-v2-192.png", "icon-v2-512.png", "apple-touch-icon-v2.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(
