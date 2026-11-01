@@ -337,7 +337,7 @@ function home(){S.hist=S.hist||{};S.hist[CM]={g:(S.saldo.cx||0)+(S.saldo.inv||0)
  up=mi==CM?a.filter(x=>x.rec&&!x.p&&x.dia&&x.dia<=TD+7).sort((p,q)=>p.dia-q.dia):[];
  $("app").innerHTML=`<div class="hd0">${avb()}<div><small>Bom dia</small><b>${E(S.user.n||"")}</b></div>${mp()}</div>
  ${cc==null?`<div class="warn mw">${wm("curioso")}<div><b>Vamos começar</b>Informe seus saldos e cadastre suas contas recorrentes (aluguel, luz, assinaturas) e entradas (salário, vale).<div class="btn2"><button class="go gh" id="ob1">Informar saldos</button><button class="go gh" id="ob2">Cadastrar contas</button></div></div></div>`:""}
- <div class="car" id="car"><div class="cd c1"><div class="sh"><small class="t">Saldo da conta corrente</small><button id="ed" aria-label="Editar saldo da conta corrente" style="margin-right:8px">${ico("edit",18)}</button><button id="eye" aria-label="Mostrar ou ocultar saldo">${ico(hide?"eyeoff":"eye")}</button></div><div class="big" id="bg">R$ —</div><div class="cs"><div class="rw" data-dr="s:ap"${A>0.005?` style="background:#df5b66;color:#fff"`:""}><small${A>0.005?` style="color:rgba(255,255,255,.9)"`:""}>${mi==CM?"Pagar agora (de "+ML(CM-1).split(" ")[0].toLowerCase()+")":"Ainda a pagar"}</small>${A>0.005?`<b style="color:#fff">${H(A)}</b>`:`<b style="color:#2e9d5b">Tudo pago ✓</b>`}</div><div><small>Sobra prevista</small><b>${Sb==null?"—":H(Sb)}</b></div></div>${mi==CM&&Sb!=null?(()=>{const ns=novSum(),sd=aRec(CM+1),pv=Sb+sd-ns,mn=ML(CM+1).split(" ")[0].toLowerCase(),mc=ML(CM).split(" ")[0].toLowerCase();return `<div class="cs" style="margin-top:8px"><div style="flex:1"><small>Previsão para ${mn}</small><b>${H(pv)}</b><small style="display:block;margin-top:4px;opacity:.8;line-height:1.3">Sobra de hoje + salário de ${mn} (${H(sd)}) − contas de ${mc} (${H(ns)})</small></div></div>`})():""}${SAL>0&&Sb!=null?`<div class="cs" style="margin-top:8px"><div style="flex:1"><small>Com o próximo salário (${H(SAL)})</small><b>${H(Sb+SAL)}</b></div></div>`:""}</div>
+ <div class="car" id="car"><div class="cd c1"><div class="sh"><small class="t">Saldo da conta corrente</small><button id="ed" aria-label="Editar saldo da conta corrente" style="margin-right:8px">${ico("edit",18)}</button><button id="eye" aria-label="Mostrar ou ocultar saldo">${ico(hide?"eyeoff":"eye")}</button></div><div class="big" id="bg">R$ —</div><div class="cs"><div class="rw" data-dr="s:ap"${A>0.005?` style="background:#df5b66;color:#fff"`:""}><small${A>0.005?` style="color:rgba(255,255,255,.9)"`:""}>${mi==CM?"Pagar agora (de "+ML(CM-1).split(" ")[0].toLowerCase()+")":"Ainda a pagar"}</small>${A>0.005?`<b style="color:#fff">${H(A)}</b>`:`<b style="color:#2e9d5b">Tudo pago ✓</b>`}</div><div><small>Sobra prevista</small><b>${Sb==null?"—":H(Sb)}</b></div></div>${mi==CM&&Sb!=null?(()=>{const ns=novSum(),sd=aRec(CM+1),pv=Sb+sd-ns,mn=ML(CM+1).split(" ")[0].toLowerCase(),mc=ML(CM).split(" ")[0].toLowerCase();return `<div class="cs" style="margin-top:8px"><div class="rw" data-dr="x:pv" style="flex:1;cursor:pointer"><small>Previsão para ${mn}</small><b>${H(pv)}</b></div></div>`})():""}${vencTxt()}${rsLink()}${SAL>0&&Sb!=null?`<div class="cs" style="margin-top:8px"><div style="flex:1"><small>Com o próximo salário (${H(SAL)})</small><b>${H(Sb+SAL)}</b></div></div>`:""}</div>
  <div class="cd c4"><div class="sh"><small class="t">Vale-alimentação</small><button id="edv" aria-label="Editar saldo do vale">${ico("edit",18)}</button></div><div class="big">${hide?"R$ ••••":M(S.saldo.vale||0)}</div>${dlTxt(["vale"])}<div class="cs"><div><small>Próxima entrada</small><b>${vn?`dia ${vn.dia||"?"}, ${H(val(vn,mi))}`:"—"}</b></div><div><small>Gasto no mês</small><b>${H(valeG)}</b></div></div></div>
  <div class="cd c2 rw" id="rendCard"><div class="sh"><small class="t">Guardado e investido</small><button id="edr" aria-label="Editar caixinhas e investimentos">${ico("edit",18)}</button></div><div class="big">${hide?"R$ ••••":M(S.saldo.cx+S.saldo.inv)}</div>${dlTxt(["cx","inv"])}<div class="cs"><div><small>Caixinhas</small><b>${H(S.saldo.cx)}</b></div><div><small>Investimentos</small><b>${H(S.saldo.inv)}</b></div></div><div class="cs" style="margin-top:8px"><div><small>Rende por mês (conta)</small><b>${H(rendMes(cc||0,120))}</b></div><div><small>Rende por mês (caixinha)</small><b>${H(rendMes(S.saldo.cx,120))}</b></div></div><small style="opacity:.6;display:block;margin-top:6px">Estimativa a 120% do CDI (${CDI}% a.a.). Toque para ajustar a taxa.</small></div></div>
  <div class="dots"><i class="on"></i><i></i><i></i></div>
@@ -515,7 +515,99 @@ function cmpGroups(G){
  const foot=`<div style="display:grid;${g3}gap:6px;align-items:center;padding:9px 0 2px;border-top:2px solid var(--bg);font-weight:700"><span>Total</span>${G.map((g,j)=>{const o=col(j);return `<span style="text-align:right">${R(o.t)}${o.miss?`<br><small style="color:#e5484d;font-weight:600">faltam ${o.miss}</small>`:""}</span>`}).join("")}</div>`;
  const cmpTxt=full.length&&G.length>1?`<div style="background:var(--bg);border-radius:14px;padding:10px 12px;margin:10px 0 0;font-size:14px"><div style="font-weight:700;margin-bottom:4px">${full.length>1?"Só os "+full.length+" itens":"Só o item"} com preço em todos</div>${G.map((g,j)=>`<div class="lg"><span>${E(g.n)}</span><b style="${j==best?"color:#2e9d5b":""}">${R(cs[j])}${j==best?" · mais barato":" · +"+R(cs[j]-cs[best])}</b></div>`).join("")}</div>`:"";
  const mixTxt=mixOk&&G.length>1?`<p style="margin:10px 0 0;font-size:14px;color:var(--m)">Comprando cada item onde está mais barato: <b style="color:var(--t)">${R(mix)}</b></p>`:"";
- sheet(`<h2 style="margin-bottom:4px">Comparar grupos</h2><p style="color:var(--m);margin:0 0 10px;font-size:14px">Em verde, o menor preço de cada item. Em vermelho, o que ficou sem preço.</p><div style="max-height:52vh;overflow:auto">${head}${body}${foot}</div>${cmpTxt}${mixTxt}<button class="go gh" id="cgx" style="margin-top:12px">Fechar</button>`);$("cgx").onclick=cl}
+ sheet(`<h2 style="margin-bottom:4px">Comparar grupos</h2><p style="color:var(--m);margin:0 0 10px;font-size:14px">Em verde, o menor preço de cada item. Em vermelho, o que ficou sem preço.</p><div style="max-height:52vh;overflow:auto">${head}${body}${foot}</div>${cmpTxt}${mixTxt}<div style="display:flex;gap:10px;margin-top:12px"><button class="go gh" id="cgx">Fechar</button><button class="go" id="cgp">Exportar PDF</button></div>`);$("cgx").onclick=cl;
+ $("cgp").onclick=()=>{const now=new Date(),th=G.map(x=>`<th class="q_r">${E(x.n)}</th>`).join("");
+  const tr=rows.map(r=>{const v=r.p.filter(x=>x>0),mn=v.length?Math.min(...v):null;return `<tr><td>${E(r.n)}</td>${r.p.map(p=>p>0?`<td class="q_r" style="${v.length>1&&p==mn?"color:#1f8a4c;font-weight:700":""}">${R(p)}</td>`:`<td class="q_r" style="color:#d13b40;font-weight:600">sem preço</td>`).join("")}</tr>`}).join("");
+  const tot=G.map((x,j)=>{const o=col(j);return `<td class="q_r"><b>${R(o.t)}</b>${o.miss?`<br><span style="color:#d13b40;font-size:10px">faltam ${o.miss}</span>`:""}</td>`}).join("");
+  const sm=(full.length&&G.length>1?`<h2>Só os ${full.length} itens com preço em todos</h2><div class="q_cd">${G.map((g,j)=>`<div><small>${E(g.n)}</small><b${j==best?' style="color:#1f8a4c"':""}>${R(cs[j])}</b>${j==best?" · mais barato":" · +"+R(cs[j]-cs[best])}</div>`).join("")}</div>`:"")+(mixOk&&G.length>1?`<p style="margin-top:14px">Comprando cada item onde está mais barato: <b>${R(mix)}</b></p>`:"");
+  const css=`*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font:12px/1.45 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#212121;margin:0}@page{size:A4 ${G.length>3?"landscape":"portrait"};margin:12mm}.q_hd{background:#FCFD76;border-radius:18px;padding:18px 20px;display:flex;align-items:center;gap:14px}.q_hd h1{font-size:22px;margin:0}.q_hd p{margin:3px 0 0;color:#4a4a2a}.q_hd .q_m{margin-left:auto;text-align:right;font-size:11px;color:#4a4a2a}h2{font-size:14px;margin:20px 0 8px}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{text-align:left;padding:6px 8px}th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#777;border-bottom:2px solid #212121}tbody tr:nth-child(even){background:#f7f7f2}tfoot td{border-top:2px solid #212121;padding-top:8px}.q_r{text-align:right}tr{page-break-inside:avoid}.q_cd{display:flex;gap:10px}.q_cd div{flex:1;border:1.5px solid #212121;border-radius:14px;padding:10px 12px}.q_cd small{color:#777;display:block}.q_cd b{font-size:15px}.q_ft{margin-top:22px;color:#999;font-size:10px;text-align:center}`;
+  printHTML(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Comparação de preços</title><style>${css}/* ===== Novo visual: "fintech suave" ===== */
+:root{--bg:#f5f5f5;--c:#ffffff;--t:#212121;--m:#7a7e85;--l:#e7e9ec;--v:#212121;--vt:#ffffff;--li:#fcfd76;--az:#c9dadf;--lv:#d7d7f4;--tabbg:#d7d7f4}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#171718;--c:#242426;--t:#f4f4f4;--m:#9a9da3;--l:#323235;--v:#fcfd76;--vt:#212121;--tabbg:#2d2d45}
+body{font-family:"Urbanist",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-weight:400;font-size:16px}
+main{padding:18px 22px 140px}
+h1{font-size:34px;font-weight:300;letter-spacing:-.03em;line-height:1.1}
+h2{font-size:22px;font-weight:400;letter-spacing:-.02em}
+b,strong{font-weight:600}
+.hd0 b{font-size:30px;font-weight:300;letter-spacing:-.03em;line-height:1.1}.hd0 small{font-size:15px}
+.av{background:var(--li);color:#212121;font-weight:600}
+.mp{background:var(--c);padding:4px}.mp span{font-weight:500}.mp button{border-radius:50%}
+/* cartões do carrossel */
+.cd{border-radius:34px;padding:26px 24px;min-height:0}.cd:before{content:none}
+.c1{background:var(--li);color:#212121}.c2{background:#212121;color:#f4f4f4}.c4{background:var(--az);color:#212121}
+.c2 .big{color:var(--li)}
+.big{font-size:52px;font-weight:300;letter-spacing:-.045em;margin:8px 0 22px}
+.cs{flex-wrap:wrap}.cs div{background:rgba(255,255,255,.62);border-radius:24px;padding:12px 16px;color:#212121}.c2 .cs div{background:rgba(255,255,255,.09);color:#f4f4f4}.c4 .cs div{background:rgba(255,255,255,.62);color:#212121}.cs small{font-size:13px}.cs b{font-size:19px;font-weight:500}
+.cd small{opacity:.7}
+.dots i{background:var(--l)}.dots i.on{background:var(--v);width:22px}
+/* ações rápidas em círculos */
+.acts span{width:62px;height:62px;border-radius:50%;background:var(--c)}.acts button{font-weight:500;font-size:14px}
+/* superfícies */
+.card{border-radius:32px;padding:22px}.gc{border-radius:30px}.g{border-radius:24px}
+.row{border-radius:28px;padding:14px 16px}.ic{width:46px;height:46px;border-radius:50%;background:var(--bg)}
+.row .n div{font-weight:500}.row .v{font-weight:600}
+.msg{border-radius:22px}.warn{border-radius:28px}
+/* botões e chips em pílula */
+.pill{background:var(--v);color:var(--vt);font-weight:500}
+.go{border-radius:99px;background:var(--li);color:#212121;font-weight:600;padding:17px}
+.go.gh{background:var(--bg);color:var(--t)}.sheet .go.gh{background:var(--bg)}
+.chip{background:var(--c);color:var(--m);font-weight:500;padding:10px 16px}.chip.on{background:var(--li);color:#212121}
+.sheet .chip{background:var(--bg)}.sheet .chip.on{background:var(--li);color:#212121}
+.chip.bk:not(.on){background:var(--bt)}
+.sg{border-radius:99px;background:var(--c);padding:4px}.sg button{border-radius:99px;font-weight:500}.sg button.on{background:var(--li);color:#212121}
+.sheet .sg{background:var(--bg)}
+.xs{background:var(--bg)}
+input,select{border-radius:99px;padding:15px 20px;background:var(--bg)}
+.card input,.sheet input,.sheet select{background:var(--bg)}
+.kp button{border-radius:50%;aspect-ratio:1.7/1;border-radius:99px}
+.amt{font-weight:300;font-size:54px}
+.tr{border-radius:50%}
+.ck{border-radius:50%}.ck.on{background:var(--li);border-color:var(--li)}
+/* barras, gráficos */
+.cb{border-radius:16px 16px 6px 6px;width:100%;max-width:64px}.cols{gap:14px}
+.pb{height:14px;border-radius:99px}.pb i{background:var(--li);border-radius:99px}
+.ev .eb{border-radius:12px 12px 4px 4px;background:var(--l);max-width:34px;min-height:4px}.ev.on .eb{background:var(--li)}
+.ev b{font-weight:600}
+.pie circle{stroke-linecap:round}
+/* navegação flutuante */
+.tab>div{background:var(--tabbg);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:7px}
+.tab button[data-t]{width:64px;border-radius:99px;color:#4a4a58;font-weight:500;padding:9px 0}
+.tab button.on{background:#212121;color:#fff}
+.tab .add{background:var(--li);color:#212121;box-shadow:none}
+.fab{background:var(--c);border:0;box-shadow:none;font-weight:500}
+/* folhas */
+.sheet>div{border-radius:36px 36px 0 0}
+.sheet{background:rgba(33,33,33,.38)}
+#toast{background:#212121;color:#fff}
+.rem time{color:var(--t);font-weight:600}
+.lg{padding:10px 0}
+.pr input{margin:6px 0 0}
+.sw.on{background:var(--v)}
+:root[data-theme="dark"] .tab button[data-t]{color:#c9c9e6}:root[data-theme="dark"] .tab button.on{background:#fcfd76;color:#212121}
+/* hachura de categoria */
+.ic.hach{background:repeating-linear-gradient(135deg,var(--l) 0 3px,transparent 3px 7px)}
+
+:root[data-theme="dark"] .c2{background:#0b0b0c;box-shadow:inset 0 0 0 1px #323235}
+@media(min-width:900px){
+main{max-width:1200px;padding:34px 44px 56px 276px}
+#app{max-width:none;display:grid;grid-template-columns:1fr 1fr;column-gap:22px;align-items:start}
+#app>.top,#app>p,#app>.sec,#app>.chips,#app>input,#app>.pf,#app>#lo,#app>.lh,#app>.sg{grid-column:1/-1}
+#app>.sg{max-width:420px;width:100%}
+#lrows{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:22px;align-items:start}#lrows>.lh{grid-column:1/-1}
+body[data-tab="0"] #app>*{grid-column:1/-1}
+body[data-tab="0"] #app>section.card{grid-column:auto}
+body[data-tab="0"] #app>section.wd{grid-column:1/-1}
+.upl{display:grid;grid-template-columns:1fr 1fr;column-gap:36px}.upl>.hd{grid-column:1/-1}
+.car{margin:0 0 30px;padding:0;overflow:visible;gap:16px}.cd{flex:1 1 0;min-width:0}.dots{display:none}
+.acts{justify-content:center;gap:56px}
+.tab{top:0;right:auto;bottom:0;width:244px;padding:28px 16px;justify-content:flex-start;align-items:flex-start}
+.tab>div{flex-direction:column;align-items:stretch;width:100%;gap:6px;border-radius:32px;padding:10px}
+.tab button[data-t]{width:100%;flex-direction:row;justify-content:flex-start;gap:12px;padding:13px 18px;font-size:15px}
+.tab .add{order:-1;width:100%;height:52px;border-radius:99px;margin:0 0 8px}
+.fab{bottom:24px;right:28px}
+.sheet{align-items:center}.sheet>div{border-radius:32px;max-width:520px;max-height:88%}
+}
+</style></head><body><div class="q_hd"><div><h1>Comparação de preços</h1><p>${G.map(g=>E(g.n)).join(" · ")}</p></div><div class="q_m">Gerado em<br>${pz2(now.getDate())}/${pz2(now.getMonth()+1)}/${now.getFullYear()}</div></div><p style="color:#777;margin:10px 0 0">Em verde, o menor preço de cada item. Em vermelho, o que ficou sem preço.</p><table><thead><tr><th>Item</th>${th}</tr></thead><tbody>${tr}</tbody><tfoot><tr><td><b>Total</b></td>${tot}</tr></tfoot></table>${sm}<p class="q_ft">Casinha · seu controle financeiro</p></body></html>`)}}
 function editItem(id){const x=S.compras.find(y=>y.id==id);if(!x)return;
  if(x.sub){return grpEd("Editar grupo",x.n,x.sub,(n,out)=>{x.n=n;x.sub=out;x.v=r2(out.reduce((t,y)=>t+y.v,0));cl();shop();toast("Grupo salvo")},(n,out)=>{x.n=n;x.sub=out;x.v=r2(out.reduce((t,y)=>t+y.v,0));cmpSheet(x)})}
  sheet(`<h2 style="margin-bottom:10px">Editar item</h2><input id="ci_n" value="${E(x.n)}"><input id="ci_v" inputmode="decimal" placeholder="Valor (opcional)" value="${x.v>0?String(x.v).replace(".",","):""}"><button class="go" id="ci_ok">Salvar</button>`);
@@ -615,7 +707,7 @@ function openAdd(x,pre){const ed=!!x,D=()=>{if(pre&&pre.done)pre.done()};let c=e
  if(ed)$("dl").onclick=()=>delLan(items(mi).find(y=>y.id==x.id)||x)}
 const barTab=t=>t==2?1:t==6?5:t==4||t==7||t==8||t==9?3:t;
 const subTabs=(a,b,c)=>`<div class="sg" style="margin-bottom:12px;background:var(--c)">${[a,b].map((l,i)=>`<button type="button" class="${i==c?"on":""}" data-sub="${i}">${l}</button>`).join("")}</div>`;
-function drill(k){fp.length=0;fb.length=0;fc.length=0;fo2="";fd1=0;fd2=0;fs="";ft="";qs="";gv=0;const[a,b]=k.split(":");if(a=="ent"){tab=7;return go()}if(a=="t")ft=b;else if(a=="s")fs=b;else if(a=="b")fb.push(b);else if(a=="c")fc.push(b);tab=1;go()}
+function drill(k){if(k=="x:rs")return resumoMes(mi==CM?CM-1:mi);if(k=="x:pv"){const Sb=S.saldo.cc-agoraSum()+aRec(CM),sd=aRec(CM+1),ns=novSum(),mn=ML(CM+1).split(" ")[0].toLowerCase(),mc=ML(CM).split(" ")[0].toLowerCase();return sheet(`<h2 style="margin-bottom:6px">Previsão para ${mn}</h2><p style="color:var(--m);margin:0 0 12px">É o que deve sobrar na conta corrente depois de receber em ${mn} e pagar o que se acumulou em ${mc}.</p><div class="lg"><span>Sobra de hoje</span><b>${H(Sb)}</b></div><div class="lg"><span>+ Entradas de ${mn}</span><b>${H(sd)}</b></div><div class="lg"><span>− Contas de ${mc} (pagas em ${mn})</span><b>${H(ns)}</b></div><div class="lg" style="border-top:1px solid var(--l);margin-top:6px;padding-top:8px"><span><b>Previsão</b></span><b>${H(Sb+sd-ns)}</b></div><button class="go gh" id="c0" style="margin-top:14px">Fechar</button>`),$("c0").onclick=cl}fp.length=0;fb.length=0;fc.length=0;fo2="";fd1=0;fd2=0;fs="";ft="";qs="";gv=0;const[a,b]=k.split(":");if(a=="ent"){tab=7;return go()}if(a=="t")ft=b;else if(a=="s")fs=b;else if(a=="b")fb.push(b);else if(a=="c")fc.push(b);tab=1;go()}
 function guard(){try{if(!history.state||history.state.c!==1)history.pushState({c:1},"")}catch(e){}}
 function go(){if(lt!=null&&lt!=tab&&!navBack){tabHist.push(lt);if(tabHist.length>20)tabHist.shift()}lt=tab;guard();if(tab!=5)shSel=null;if(tab!=1){qs="";sel=null}[home,list,contas,mais,profile,shop,goals,entradas,dividir,cal][tab]();
  const pr=tab==1||tab==2?[1,2]:tab==5||tab==6?[5,6]:null;if(pr)document.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{tab=pr[+b.dataset.sub];go()});
@@ -761,6 +853,125 @@ function cal(){const y=Math.floor(mi/12),mo=mi%12,dim=new Date(y,mo+1,0).getDate
  document.querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>{const d=+b.dataset.cd,e=ev[d]||[];sheet(`<h2 style="margin-bottom:10px">${d} de ${MS[mo].toLowerCase()}</h2>${e.map(z=>`<div class="lg${z.ok?" mut":""}"><i class="k-${z.k}" style="flex:none"></i><span>${E(z.n)}<br><small style="color:var(--m)">${KCAL[z.k]}</small></span>${z.v!=null?`<b>${R(z.v)}</b>`:""}</div>`).join("")||`<p style="color:var(--m);margin:0">Nada neste dia.</p>`}`)})}
 
 /* ---------- Exportar ---------- */
+const RSCSS=`.rs{font-size:14px;color:inherit}.rs h3{font-size:14px;margin:18px 0 8px}.rs .k{display:flex;gap:8px;margin:10px 0}.rs .k div{flex:1;background:var(--bg,#f5f5ef);border-radius:14px;padding:10px 12px}.rs .k small{display:block;color:var(--m,#777);font-size:12px}.rs .k b{display:block;font-size:16px;margin-top:2px}.rs .ins{background:var(--bg,#f5f5ef);border-radius:14px;padding:4px 14px;margin:0}.rs .ins p{margin:10px 0;line-height:1.4}.rs .br{display:flex;align-items:center;gap:8px;margin:7px 0}.rs .br span{width:110px;flex:none}.rs .br div{flex:1;background:var(--bg,#eeeee6);border-radius:6px;height:10px}.rs .br div i{display:block;height:10px;border-radius:6px;background:#212121}.rs .br em{width:34px;text-align:right;font-style:normal;color:var(--m,#777);font-size:12px}.rs .br b{width:86px;text-align:right}`;
+const vencL=()=>mi!=CM?[]:fats(CM-1).filter(x=>!x.p&&S.vd[x.b]&&TD>=S.vd[x.b]-2),
+vencTxt=()=>{const L=vencL();if(!L.length)return"";return `<div data-dr="s:ap" style="margin-top:8px;cursor:pointer;font-size:13px;line-height:1.35;color:#b3303a;font-weight:600">${L.map(x=>{const d=S.vd[x.b],t=TD>d?"venceu dia "+d+" e ainda não está marcada como paga":TD==d?"vence hoje":"vence dia "+d;return "Fatura "+E(x.b)+" "+t}).join("<br>")}</div>`};
+const rsLink=()=>{const t=mi==CM?CM-1:mi<CM?mi:null;if(t==null||!sum(items(t),()=>true))return"";const done=mi==CM&&agoraSum()<0.005,n=ML(t).split(" ")[0].toLowerCase();return `<div style="margin-top:8px"><button type="button" class="chip${done?" on":""}" data-dr="x:rs">${done?"Tudo pago ✓ · ver resumo de "+n:"Resumo de "+n}</button></div>`};
+function rsHTML(m){
+ const a=items(m),en=ents(m),EN=en.reduce((t,x)=>t+x.v,0),T=sum(a,()=>true),res=r2(EN-T),pc=v=>T?Math.round(v/T*100):0;
+ const ENv=en.filter(x=>x.t=="vale").reduce((t,x)=>t+x.v,0),ENc=EN-ENv,valeG=sum(a,x=>x.m=="Vale");
+ const cats={};a.forEach(x=>{const c=x.fat?"Faturas sem detalhe":(x.c||"Outros");cats[c]=(cats[c]||0)+x.v});
+ const cl=Object.entries(cats).sort((p,q)=>q[1]-p[1]),top=cl.slice(0,6),mx=top.length?top[0][1]:1;
+ const fx=sum(a,x=>x.k!="v"),av=a.filter(x=>x.k=="v"&&!x.fat),AV=sum(av,()=>true);
+ const fm={};a.forEach(x=>{fm[x.m]=(fm[x.m]||0)+x.v});const fl=Object.entries(fm).sort((p,q)=>q[1]-p[1]);
+ const y=Math.floor(m/12),mo=m%12,nd=new Date(y,mo+1,0).getDate(),WD=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+ const byD={},byW={};av.forEach(x=>{if(!x.dia)return;byD[x.dia]=(byD[x.dia]||0)+x.v;const w=new Date(y,mo,x.dia).getDay();byW[w]=(byW[w]||0)+x.v});
+ const dt=Object.entries(byD).sort((p,q)=>q[1]-p[1]).slice(0,3),wt=Object.entries(byW).sort((p,q)=>q[1]-p[1])[0];
+ const big=av.slice().sort((p,q)=>q.v-p.v)[0],TP=sum(items(m-1),()=>true),mp=ML(m-1).split(" ")[0].toLowerCase();
+ const ins=[];
+ ins.push(`Entrou <b>${R(EN)}</b> e saiu <b>${R(T)}</b>: ${res>=0?"a diferença a seu favor é de <b>"+R(res)+"</b>":"faltaram <b>"+R(-res)+"</b>"}.`);
+ if(T>0)ins.push(`<b>${pc(fx)}%</b> do que você gastou já era compromisso (recorrentes e parcelas). Os gastos do dia a dia foram <b>${pc(AV)}%</b> (${R(AV)}).`);
+ if(top.length)ins.push(`<b>${E(top[0][0])}</b> foi onde mais saiu: ${R(top[0][1])} (${pc(top[0][1])}% do total).`);
+ if(dt.length)ins.push(`Nos gastos do dia a dia, os dias mais pesados foram ${dt.map(([d,v])=>"<b>dia "+d+"</b> ("+R(v)+")").join(", ")}.${wt?" O dia da semana em que mais saiu dinheiro foi <b>"+WD[wt[0]]+"</b>.":""}`);
+ if(AV>0)ins.push(`Em média, você gastou <b>${R(AV/nd)}</b> por dia em compras avulsas.${big?" A maior foi "+E(big.n)+" ("+R(big.v)+").":""}`);
+ if(ENv>0)ins.push(`Do vale-alimentação (${R(ENv)}), você usou <b>${R(valeG)}</b> (${Math.round(valeG/ENv*100)}%).`);
+ if(TP>0)ins.push(`Comparado com ${mp}, você gastou <b>${R(Math.abs(T-TP))}</b> ${T>=TP?"a mais":"a menos"} (${Math.round(Math.abs(T-TP)/TP*100)}%).`);
+ const hm=[];for(let k=m;k>m-6;k--){const t=sum(items(k),()=>true),e=ents(k).reduce((q,x)=>q+x.v,0);if(t>0)hm.push([k,e,t])}
+ const mm=hm.length>1?`<h3>Mês a mês</h3>${hm.map(([k,e,t])=>`<div class="br"${k==m?' style="font-weight:700"':""}><span>${ML(k).split(" ")[0]}</span><div></div><em></em><b style="width:auto;flex:none;margin-right:10px">${R(e)} entrou</b><b style="width:auto;flex:none">${R(t)} saiu</b></div>`).join("")}`:"";
+ return `<style>${RSCSS}</style><div class="rs"><div class="k"><div><small>Entrou</small><b>${R(EN)}</b></div><div><small>Gastou</small><b>${R(T)}</b></div><div><small>${res>=0?"Diferença":"Faltou"}</small><b style="color:${res>=0?"#2e9d5b":"#d13b40"}">${R(Math.abs(res))}</b></div></div>
+ <h3>O que chamou atenção</h3><div class="ins">${ins.map(t=>"<p>"+t+"</p>").join("")}</div>
+ ${top.length?`<h3>Para onde foi</h3>${top.map(([c,v])=>`<div class="br"><span>${E(c)}</span><div><i style="width:${v/mx*100}%"></i></div><em>${pc(v)}%</em><b>${R(v)}</b></div>`).join("")}${cl.length>6?`<div class="br"><span style="color:var(--m,#777)">Outras ${cl.length-6}</span><div></div><em></em><b>${R(cl.slice(6).reduce((t,x)=>t+x[1],0))}</b></div>`:""}`:""}
+ ${fl.length?`<h3>Como você pagou</h3>${fl.map(([f,v])=>`<div class="br"><span>${E(f)}</span><div><i style="width:${v/fl[0][1]*100}%"></i></div><em>${pc(v)}%</em><b>${R(v)}</b></div>`).join("")}`:""}${mm}</div>`}
+function resumoMes(m){
+ sheet(`<h2 style="margin-bottom:2px">Resumo de ${ML(m).split(" ")[0].toLowerCase()}</h2><div style="max-height:62vh;overflow:auto">${rsHTML(m)}</div><div style="display:flex;gap:10px;margin-top:12px"><button class="go gh" id="rsx">Fechar</button><button class="go" id="rsp">Salvar PDF</button></div>`);
+ $("rsx").onclick=cl;
+ $("rsp").onclick=()=>{const now=new Date();printHTML(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Resumo ${ML(m)}</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font:12px/1.45 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#212121;margin:0}@page{margin:12mm}.q_hd{background:#FCFD76;border-radius:18px;padding:18px 20px;display:flex;align-items:center}.q_hd h1{font-size:24px;margin:0}.q_hd p{margin:3px 0 0;color:#4a4a2a}.q_hd .q_m{margin-left:auto;text-align:right;font-size:11px;color:#4a4a2a}.q_ft{margin-top:22px;color:#999;font-size:10px;text-align:center}/* ===== Novo visual: "fintech suave" ===== */
+:root{--bg:#f5f5f5;--c:#ffffff;--t:#212121;--m:#7a7e85;--l:#e7e9ec;--v:#212121;--vt:#ffffff;--li:#fcfd76;--az:#c9dadf;--lv:#d7d7f4;--tabbg:#d7d7f4}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#171718;--c:#242426;--t:#f4f4f4;--m:#9a9da3;--l:#323235;--v:#fcfd76;--vt:#212121;--tabbg:#2d2d45}
+body{font-family:"Urbanist",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-weight:400;font-size:16px}
+main{padding:18px 22px 140px}
+h1{font-size:34px;font-weight:300;letter-spacing:-.03em;line-height:1.1}
+h2{font-size:22px;font-weight:400;letter-spacing:-.02em}
+b,strong{font-weight:600}
+.hd0 b{font-size:30px;font-weight:300;letter-spacing:-.03em;line-height:1.1}.hd0 small{font-size:15px}
+.av{background:var(--li);color:#212121;font-weight:600}
+.mp{background:var(--c);padding:4px}.mp span{font-weight:500}.mp button{border-radius:50%}
+/* cartões do carrossel */
+.cd{border-radius:34px;padding:26px 24px;min-height:0}.cd:before{content:none}
+.c1{background:var(--li);color:#212121}.c2{background:#212121;color:#f4f4f4}.c4{background:var(--az);color:#212121}
+.c2 .big{color:var(--li)}
+.big{font-size:52px;font-weight:300;letter-spacing:-.045em;margin:8px 0 22px}
+.cs{flex-wrap:wrap}.cs div{background:rgba(255,255,255,.62);border-radius:24px;padding:12px 16px;color:#212121}.c2 .cs div{background:rgba(255,255,255,.09);color:#f4f4f4}.c4 .cs div{background:rgba(255,255,255,.62);color:#212121}.cs small{font-size:13px}.cs b{font-size:19px;font-weight:500}
+.cd small{opacity:.7}
+.dots i{background:var(--l)}.dots i.on{background:var(--v);width:22px}
+/* ações rápidas em círculos */
+.acts span{width:62px;height:62px;border-radius:50%;background:var(--c)}.acts button{font-weight:500;font-size:14px}
+/* superfícies */
+.card{border-radius:32px;padding:22px}.gc{border-radius:30px}.g{border-radius:24px}
+.row{border-radius:28px;padding:14px 16px}.ic{width:46px;height:46px;border-radius:50%;background:var(--bg)}
+.row .n div{font-weight:500}.row .v{font-weight:600}
+.msg{border-radius:22px}.warn{border-radius:28px}
+/* botões e chips em pílula */
+.pill{background:var(--v);color:var(--vt);font-weight:500}
+.go{border-radius:99px;background:var(--li);color:#212121;font-weight:600;padding:17px}
+.go.gh{background:var(--bg);color:var(--t)}.sheet .go.gh{background:var(--bg)}
+.chip{background:var(--c);color:var(--m);font-weight:500;padding:10px 16px}.chip.on{background:var(--li);color:#212121}
+.sheet .chip{background:var(--bg)}.sheet .chip.on{background:var(--li);color:#212121}
+.chip.bk:not(.on){background:var(--bt)}
+.sg{border-radius:99px;background:var(--c);padding:4px}.sg button{border-radius:99px;font-weight:500}.sg button.on{background:var(--li);color:#212121}
+.sheet .sg{background:var(--bg)}
+.xs{background:var(--bg)}
+input,select{border-radius:99px;padding:15px 20px;background:var(--bg)}
+.card input,.sheet input,.sheet select{background:var(--bg)}
+.kp button{border-radius:50%;aspect-ratio:1.7/1;border-radius:99px}
+.amt{font-weight:300;font-size:54px}
+.tr{border-radius:50%}
+.ck{border-radius:50%}.ck.on{background:var(--li);border-color:var(--li)}
+/* barras, gráficos */
+.cb{border-radius:16px 16px 6px 6px;width:100%;max-width:64px}.cols{gap:14px}
+.pb{height:14px;border-radius:99px}.pb i{background:var(--li);border-radius:99px}
+.ev .eb{border-radius:12px 12px 4px 4px;background:var(--l);max-width:34px;min-height:4px}.ev.on .eb{background:var(--li)}
+.ev b{font-weight:600}
+.pie circle{stroke-linecap:round}
+/* navegação flutuante */
+.tab>div{background:var(--tabbg);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:7px}
+.tab button[data-t]{width:64px;border-radius:99px;color:#4a4a58;font-weight:500;padding:9px 0}
+.tab button.on{background:#212121;color:#fff}
+.tab .add{background:var(--li);color:#212121;box-shadow:none}
+.fab{background:var(--c);border:0;box-shadow:none;font-weight:500}
+/* folhas */
+.sheet>div{border-radius:36px 36px 0 0}
+.sheet{background:rgba(33,33,33,.38)}
+#toast{background:#212121;color:#fff}
+.rem time{color:var(--t);font-weight:600}
+.lg{padding:10px 0}
+.pr input{margin:6px 0 0}
+.sw.on{background:var(--v)}
+:root[data-theme="dark"] .tab button[data-t]{color:#c9c9e6}:root[data-theme="dark"] .tab button.on{background:#fcfd76;color:#212121}
+/* hachura de categoria */
+.ic.hach{background:repeating-linear-gradient(135deg,var(--l) 0 3px,transparent 3px 7px)}
+
+:root[data-theme="dark"] .c2{background:#0b0b0c;box-shadow:inset 0 0 0 1px #323235}
+@media(min-width:900px){
+main{max-width:1200px;padding:34px 44px 56px 276px}
+#app{max-width:none;display:grid;grid-template-columns:1fr 1fr;column-gap:22px;align-items:start}
+#app>.top,#app>p,#app>.sec,#app>.chips,#app>input,#app>.pf,#app>#lo,#app>.lh,#app>.sg{grid-column:1/-1}
+#app>.sg{max-width:420px;width:100%}
+#lrows{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:22px;align-items:start}#lrows>.lh{grid-column:1/-1}
+body[data-tab="0"] #app>*{grid-column:1/-1}
+body[data-tab="0"] #app>section.card{grid-column:auto}
+body[data-tab="0"] #app>section.wd{grid-column:1/-1}
+.upl{display:grid;grid-template-columns:1fr 1fr;column-gap:36px}.upl>.hd{grid-column:1/-1}
+.car{margin:0 0 30px;padding:0;overflow:visible;gap:16px}.cd{flex:1 1 0;min-width:0}.dots{display:none}
+.acts{justify-content:center;gap:56px}
+.tab{top:0;right:auto;bottom:0;width:244px;padding:28px 16px;justify-content:flex-start;align-items:flex-start}
+.tab>div{flex-direction:column;align-items:stretch;width:100%;gap:6px;border-radius:32px;padding:10px}
+.tab button[data-t]{width:100%;flex-direction:row;justify-content:flex-start;gap:12px;padding:13px 18px;font-size:15px}
+.tab .add{order:-1;width:100%;height:52px;border-radius:99px;margin:0 0 8px}
+.fab{bottom:24px;right:28px}
+.sheet{align-items:center}.sheet>div{border-radius:32px;max-width:520px;max-height:88%}
+}
+</style></head><body><div class="q_hd"><div><h1>Resumo de ${ML(m)}</h1><p>${S.user.n?E(S.user.n):""}</p></div><div class="q_m">Gerado em<br>${pz2(now.getDate())}/${pz2(now.getMonth()+1)}/${now.getFullYear()}</div></div>${rsHTML(m)}<p class="q_ft">Casinha · seu controle financeiro</p></body></html>`)}}
 function printHTML(h){const f=document.createElement("iframe");f.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0";document.body.appendChild(f);const d=f.contentWindow.document;d.open();d.write(h);d.close();setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){toast("Não foi possível abrir a impressão")}setTimeout(()=>f.remove(),90000)},500)}
 function pdfMes(m){const a=items(m).slice().sort((p,q)=>(p.dia||99)-(q.dia||99)),en=ents(m),T=sum(a,()=>true),EN=en.reduce((t,x)=>t+x.v,0),fa=fats(m),now=new Date(),st=x=>(x.rec||x.up)?(x.p?"Pago":"A pagar"):"";
  const sb=x=>{const s=st(x);return s?`<span class="q_b ${s=="Pago"?"q_ok":"q_ap"}">${s}</span>`:""};
