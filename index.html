@@ -257,7 +257,7 @@ function entAsk(f){const L=f===2?pendEnt().concat(proxEnt()):pendEnt().filter(e=
  shb.querySelectorAll("[data-xjs]").forEach(b=>b.onclick=()=>{S.ec[b.dataset.xjs+"|"+CM]=1;toast("Certo, não somei de novo no saldo");if(pendEnt().length||proxEnt().length&&f===2){const r=f===2?2:undefined;entAsk(r)}else cl();go()});
  shb.querySelectorAll("[data-xey]").forEach(b=>b.onclick=()=>{const e=L.find(x=>x.id==b.dataset.xey),v=num(shb.querySelector(`[data-xev="${e.id}"]`).value);if(!(v>0))return toast("Informe o valor que caiu");const k=e.t=="vale"?"vale":"cc",o=S.saldo[k],nv=r2((o||0)+v);if(o!=null)hsPush(k,o,nv);S.saldo[k]=nv;if(r2(v)!=r2(e.v)){const w="e"+e.id+"|"+CM;S.ov[w]=Object.assign(S.ov[w]||{},{v})}S.ec[e.id+"|"+CM]=1;toast("Somei "+R(v)+" no saldo "+(k=="vale"?"do vale":"da conta"));if(pendEnt().length)entAsk();else cl();go()});
  shb.querySelectorAll("[data-xno]").forEach(b=>b.onclick=()=>{S.es[b.dataset.xno+"|"+CM]=TD;if(L.every(x=>S.es[x.id+"|"+CM]==TD||S.ec[x.id+"|"+CM]))cl();else b.closest("div[style*=radius]").remove();go()})}
-function lembretes(){if(mi!=CM)return"";const r=[];pendEnt().forEach(e=>r.push(`<div class="lg"><span>Hoje é dia ${TD}: ${e.dia==TD?"":"era para cair dia "+e.dia+". "}${E(e.n)} já caiu?<br><small style="color:var(--m)">${R(e.v)} previsto, ${e.t=="vale"?"vale-alimentação":"conta corrente"}</small></span><button class="chip on" data-lbe="1">Conferir</button></div>`));proxEnt().forEach(e=>r.push(`<div class="lg"><span>${E(e.n)} está previsto para o dia ${e.dia}. Já caiu?<br><small style="color:var(--m)">${R(e.v)}, ${e.t=="vale"?"vale-alimentação":"conta corrente"}</small></span><button class="chip on" data-lbe="2">Já caiu</button></div>`));if(saldoDue()){const d=dd(S.saldoEm);r.push(`<div class="lg"><span>Conferir o saldo da conta<br><small style="color:var(--m)">${d==null?"Ainda não foi atualizado":d==0?"Atualizado hoje":"Atualizado há "+d+(d>1?" dias":" dia")}</small></span><button class="chip on" id="lbs">Atualizar</button></div>`)}
+function lembretes(){if(mi!=CM)return"";const r=[];if(capPend().length){const n=capPend().length;r.push(`<div class="lg"><span><b>${n} ${n>1?"movimentações chegaram":"movimentação chegou"} do celular</b><br><small style="color:var(--m)">Confira e confirme</small></span><button class="chip on" id="lbcx">Ver</button></div>`)}pendEnt().forEach(e=>r.push(`<div class="lg"><span>Hoje é dia ${TD}: ${e.dia==TD?"":"era para cair dia "+e.dia+". "}${E(e.n)} já caiu?<br><small style="color:var(--m)">${R(e.v)} previsto, ${e.t=="vale"?"vale-alimentação":"conta corrente"}</small></span><button class="chip on" data-lbe="1">Conferir</button></div>`));proxEnt().forEach(e=>r.push(`<div class="lg"><span>${E(e.n)} está previsto para o dia ${e.dia}. Já caiu?<br><small style="color:var(--m)">${R(e.v)}, ${e.t=="vale"?"vale-alimentação":"conta corrente"}</small></span><button class="chip on" data-lbe="2">Já caiu</button></div>`));if(saldoDue()){const d=dd(S.saldoEm);r.push(`<div class="lg"><span>Conferir o saldo da conta<br><small style="color:var(--m)">${d==null?"Ainda não foi atualizado":d==0?"Atualizado hoje":"Atualizado há "+d+(d>1?" dias":" dia")}</small></span><button class="chip on" id="lbs">Atualizar</button></div>`)}
  avisosFat().forEach(a=>r.push(`<div class="lg"><span>${E(a.t)}<br><small style="color:var(--m)">${E(a.d)}</small></span></div>`));
  if(bkDue())r.push(`<div class="lg"><span>Fazer o backup${lbv().bk=="d"?" de hoje":""}<br><small style="color:var(--m)">${S.bkEm?"Último em "+S.bkEm.split("-").reverse().slice(0,2).join("/"):"Nenhum backup feito ainda"}</small></span><button class="chip on" id="lbb">Exportar</button></div>`);
  const _mk=saldoDue()&&(dd(S.saldoEm)==null||dd(S.saldoEm)>=6)?"bravo":avisosFat().some(a=>/vence/.test(a.t))?"tenso":"curioso";return r.length?`<section class="card wd"><div class="hd"><h2>Lembretes</h2>${mas(_mk,34)}</div>${r.join("")}</section>`:""}
@@ -276,7 +276,7 @@ const ents=m=>[...S.ent.filter(r=>act(r,m)&&!ovk("e",r.id,m).skip).map(r=>{const
 const credit=(m,b)=>sum(items(m,1),x=>x.m=="Crédito"&&x.b==b&&!x.fat&&!x.nf),fbase=(m,b)=>Math.max(0,r2(sum(S.fat||[],x=>x.mes==m&&x.b==b)-infSum(m,b))),fats=m=>S.bks.map(b=>{const o=S.ov["f"+b+"|"+m],pend=m==CM-1&&o!==true;return{b,m,v:sum(items(m),x=>x.m=="Crédito"&&x.b==b&&!x.fat)+fbase(m,b),ab:0,p:m<CM?!pend:!!o}}).filter(x=>x.v);
 const isPx=x=>x.m=="Pix"||x.m=="Débito",SDay=()=>{const nx=ents(CM).filter(e=>e.t=="cc"&&e.rec&&e.dia>TD&&!(S.ec||{})[e.id+"|"+CM]);return nx.length?Math.min(...nx.map(e=>e.dia)):TD},
 agoraL=()=>{const sd=SDay();return[...items(CM-1).filter(x=>!x.p&&isPx(x)&&(x.rec||x.up)&&!x.pe),...items(CM).filter(x=>!x.p&&isPx(x)&&x.up&&!x.rec&&!x.pe&&!x.pc&&(x.dia||0)<=sd)]},
-debtNow=()=>r2((S.pe||[]).reduce((t,p)=>{const v=peMes(p.id)[CM];return t+(v<0?-v:0)},0)),
+debtNow=()=>r2((S.pe||[]).reduce((t,p)=>{const v=peMes(p.id)[CM];if(!(v<0))return t;const pd=(S.ac||[]).reduce((u,a)=>{if(a.pid!=p.id||!(a.v>0)||!a.dt)return u;const d=a.dt.split("-");return +d[0]*12+(+d[1]-1)==CM?u+a.v:u},0);return t+Math.max(0,-v-pd)},0)),
 agoraSum=()=>r2(fats(CM-1).filter(x=>!x.p).reduce((t,x)=>t+x.v,0)+agoraL().reduce((t,x)=>t+x.v,0)+debtNow()),
 agoraN=()=>{const sd=SDay();return items(CM).filter(x=>!x.p&&isPx(x)&&x.up&&!x.rec&&!x.pe&&!x.pc&&(x.dia||0)<=sd)},
 novL=()=>{const ag=new Set(agoraN().map(x=>x.id));return items(CM).filter(x=>!x.p&&isPx(x)&&(x.rec||x.up)&&!x.pe&&!ag.has(x.id))},
@@ -355,7 +355,7 @@ function home(){S.hist=S.hist||{};S.hist[CM]={g:(S.saldo.cx||0)+(S.saldo.inv||0)
  if(cc==null)$("bg").textContent="R$ —";else if(hide)$("bg").textContent="R$ ••••••";else cu($("bg"),cc);
  nav();$("eye").onclick=()=>{hide=!hide;S.prefs[0]=hide?1:0;home()};$("ed").onclick=()=>saldoEdit("cc");$("edv").onclick=()=>saldoEdit("vale");$("edr").onclick=e=>{e.stopPropagation();saldoEdit("inv")};$("rendCard").onclick=cdiSheet;if($("fck"))$("fck").onclick=()=>{S.fch=CM;home()};if($("alj"))$("alj").onclick=ajAlc;document.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>{S.rd[b.dataset.rd]=1;home()});$("av").onclick=()=>{tab=4;go()};
  if($("ob1")){$("ob1").onclick=saldoSheet;$("ob2").onclick=()=>{tab=2;go()}}
- document.querySelectorAll("[data-lbe]").forEach(b=>b.onclick=()=>entAsk(+b.dataset.lbe));if(mi==CM&&tab==0&&!window.__ep&&pendEnt().some(x=>S.es[x.id+"|"+CM]!=TD)){window.__ep=1;setTimeout(()=>{if(tab==0&&!$("sh").classList.contains("on"))entAsk()},500)}if($("lbs"))$("lbs").onclick=saldoSheet;if($("lbb"))$("lbb").onclick=expBackup;
+ document.querySelectorAll("[data-lbe]").forEach(b=>b.onclick=()=>entAsk(+b.dataset.lbe));if(mi==CM&&tab==0&&!window.__ep&&pendEnt().some(x=>S.es[x.id+"|"+CM]!=TD)){window.__ep=1;setTimeout(()=>{if(tab==0&&!$("sh").classList.contains("on"))entAsk()},500)}if($("lbs"))$("lbs").onclick=saldoSheet;if($("lbcx"))$("lbcx").onclick=chegou;if($("lbb"))$("lbb").onclick=expBackup;
  const car=$("car");car.onscroll=()=>{const i=Math.min(2,Math.round(car.scrollLeft/(car.clientWidth+12)));document.querySelectorAll(".dots i").forEach((d,k)=>d.classList.toggle("on",k==i))};
  document.querySelectorAll("[data-dr]").forEach(b=>b.onclick=()=>drill(b.dataset.dr));
  document.querySelectorAll("[data-cu]").forEach(b=>b.onclick=()=>{cur=b.dataset.cu;home()});
@@ -473,7 +473,7 @@ function askClose(b,cb){sheet(`<h2 style="margin-bottom:6px">Quando fecha a fatu
 function startAsk(n,b,cb){const nx=MH(mi+1);
  sheet(`<h2 style="margin-bottom:6px">Quando ${E(n)} começa a contar?</h2><p style="color:var(--m);margin:0 0 16px">É no crédito${b?", no "+E(b):""}. Se a fatura atual já tem essa cobrança, somar de novo contaria em dobro.</p><div style="display:flex;flex-direction:column;gap:8px"><button class="go gh" id="q1">Já está na fatura atual</button><button class="go gh" id="q2">Ainda não está, somar já em ${MH(mi)}</button><button class="go gh" id="q3">Começar só em ${nx}</button></div>`);
  $("q1").onclick=()=>{cl();cb(mi,mi)};$("q2").onclick=()=>{cl();cb(mi,0,1)};$("q3").onclick=()=>{cl();cb(mi+1)}}
-function mais(){$("app").innerHTML=`<div class="top"><h1>Mais</h1></div>${[["plus","Entradas recorrentes","Salário, vale e histórico de reajustes",7],["swap","Dividir","Acertos com pessoas e grupos de gasto",8],["cal","Calendário","Vencimentos, faturas e entradas",9],["user","Perfil e preferências","Avatar, dados e saldos",4]].map(([i,t,d,k])=>`<div class="row rw" data-go="${k}"><div class="ic">${ico(i)}</div><div class="n"><div>${t}</div><small>${d}</small></div></div>`).join("")}`;document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tab=+b.dataset.go;go()})}
+function mais(){$("app").innerHTML=`<div class="top"><h1>Mais</h1></div>${[["plus","Entradas recorrentes","Salário, vale e histórico de reajustes",7],["swap","Dividir","Acertos com pessoas e grupos de gasto",8],["cal","Calendário","Vencimentos, faturas e entradas",9],["user","Perfil e preferências","Avatar, dados e saldos",4]].map(([i,t,d,k])=>`<div class="row rw" data-go="${k}"><div class="ic">${ico(i)}</div><div class="n"><div>${t}</div><small>${d}</small></div></div>`).join("")}<div class="row rw" id="mcx"><div class="ic">${ico("swap")}</div><div class="n"><div>Chegou do celular${capPend().length?` (${capPend().length})`:""}</div><small>Compras e Pix lidos das notificações</small></div></div><div class="row rw" id="mcs"><div class="ic">${ico("cal")}</div><div class="n"><div>Captura automática</div><small>Como instalar o app no Android</small></div></div>`;document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tab=+b.dataset.go;go()});$("mcx").onclick=()=>{if(capPend().length)chegou();else toast("Nada novo chegou")};$("mcs").onclick=capSetup}
 const sobraInfo=()=>{const cc=S.saldo.cc;if(cc==null)return null;const sb=cc-pagar(CM)+aRec(CM),pas=ents(CM).filter(e=>e.t=="cc"&&e.rec&&ePas(e)).map(e=>e.id),sal=ents(CM+1).filter(e=>pas.includes(e.id)).reduce((t,e)=>t+e.v,0);return{sb,sal,tot:sb+sal}};
 function buyItem(id){const x=S.compras.find(y=>y.id==id);if(!x)return;if(x.ok){x.ok=false;shop();return}
  sheet(`<h2 style="margin-bottom:6px">Comprou ${E(x.n)}?</h2><p style="color:var(--m);margin:0 0 16px">${x.v>0?R(x.v)+". ":""}Quer lançar em Gastos agora?</p><div style="display:flex;flex-direction:column;gap:8px"><button class="go" id="qy">Registrar como gasto</button><button class="go gh" id="qn">Só marcar como comprado</button><button class="go gh" id="q0">Cancelar</button></div>`);
@@ -819,12 +819,141 @@ function qsplit(raw){const s=String(raw).trim();if(!s)return[];
  return s.split(/\s*;\s*|\n+|\.\s+(?=\S)|\s+(?:depois|tambem|também|alem disso|além disso|e mais)\s+|\s+e\s+(?=(?:gastei|comprei|paguei|recebi|ganhei|entrou|caiu)\b)/i).map(x=>x.trim()).filter(Boolean)}
 function qparse(raw,ctx){return qsplit(raw).map(x=>qparse1(x,ctx)).filter(Boolean)}
 
+/* ----- Chegou: reconhecer, nas notificações do celular, o que é movimentação de dinheiro ----- */
+const capN=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+const CAP_NO=/^(com\.whatsapp|org\.telegram|org\.thoughtcrime|com\.instagram|com\.facebook|com\.discord|com\.slack|com\.microsoft\.teams|us\.zoom|com\.snapchat|com\.twitter|com\.zhiliaoapp|com\.linkedin|com\.google\.android\.youtube|com\.spotify|com\.android\.vending|com\.google\.android\.apps\.docs|com\.reddit|tv\.twitch|com\.skype)/i;
+const CAP_FIN=/^(com\.nu\.|com\.nubank|com\.mercadopago|br\.com\.intermedium|com\.inter\b|com\.itau|br\.com\.itau|com\.bradesco|br\.com\.bradesco|br\.com\.bb\.|com\.santander|br\.com\.santander|com\.c6bank|com\.picpay|br\.com\.neon|br\.com\.original|br\.com\.btg|com\.btg|br\.com\.gabba|com\.caixa|br\.com\.sicredi|br\.com\.sicoob|br\.com\.uol\.ps|com\.pagseguro|br\.com\.will|br\.com\.next|com\.xp|br\.com\.xp|br\.com\.safra|br\.com\.banrisul|com\.ame|br\.com\.mercantil)/i;
+const CAP_FINL=/nubank|\bnu\b|mercado ?pago|\binter\b|ita[uú]|bradesco|santander|\bc6\b|picpay|neon|original|\bbtg\b|caixa|sicredi|sicoob|banco do brasil|\bbb\b|pagbank|pagseguro|will bank|\bnext\b|\bxp\b|safra|banrisul|\bame\b|ticket|alelo|sodexo|pluxee|\bvr\b|flash|swile|caju|edenred|ben visa/i;
+const CAP_VALE=/ticket|alelo|sodexo|pluxee|\bvr\b|flash|swile|caju|edenred|ben visa|vale[- ](alimenta|refei)|beneficio|refeicao|alimentacao/i;
+const CAP_SMS=/messag|\.mms|\.sms|com\.google\.android\.apps\.messaging|com\.samsung\.android\.messaging|com\.miui\.mms|com\.google\.android\.gm\b/i;
+const CAP_BANKMAP=[[/nu\.production|nubank|\bnu\b/,"nubank"],[/mercadopago|mercado ?pago/,"mercado pago"],[/intermedium|\binter\b/,"inter"],[/itau/,"itau"],[/bradesco/,"bradesco"],[/santander/,"santander"],[/c6/,"c6"],[/picpay/,"picpay"],[/neon/,"neon"],[/btg/,"btg"],[/sicredi/,"sicredi"],[/sicoob/,"sicoob"],[/caixa/,"caixa"],[/bb\.android|banco do brasil/,"banco do brasil"],[/pagseguro|pagbank|uol\.ps/,"pagbank"],[/\bxp\b|com\.xp/,"xp"],[/ticket/,"ticket"],[/alelo/,"alelo"],[/sodexo|pluxee/,"pluxee"],[/\bvr\b/,"vr"]];
+/* o que ignorar de vez */
+const CAP_JUNK=/\b(oferta|ofertas|promo|promocao|desconto|cupom|cupons|cashback de ate|ganhe|ganhou|sorteio|convite|indique|emprestimo|pre-?aprovad|simule|simulacao|parcele|investimento|rendimento|vencimento da fatura|proxima fatura|codigo de seguranca|codigo de verificacao|token|senha|seu codigo|nao compartilhe|ative|atualize|novidade|aproveite|ultimos dias|boleto (gerado|disponivel|vence|vencera)|lembrete|aviso de vencimento|falta pouco|chegou a hora|bloqueio|bloqueado|tentativa|fatura (fechou|fechada|vence|vencera|ja esta|disponivel|aberta)|sua fatura|cartao (chegou|foi enviado|esta a caminho|desbloqueado)|limite (aumentou|liberado)|dica|resumo|extrato|pesquisa|avalie|programa de pontos|pontos)\b/;
+const CAP_REFUSED=/recusad|negad|nao aprovad|nao foi aprovad|nao autorizad|nao foi possivel|falha na|erro na|cancelad/;
+/* frases fortes: bastam em qualquer app. frases soltas: só em app de banco */
+const CAP_IN_S=/(voce|vc) recebeu (um |uma )?(pix|transferencia|deposito)|pix recebido|te (enviou|mandou|transferiu) (um |uma )?(pix|r\$)|transferencia recebida|deposito recebido|credito (de|do) salario|salario (caiu|depositado|recebido)/;
+const CAP_IN_L=/(voce|vc) recebeu r\$|recebeu r\$|pagamento recebido|credito em conta|\bsalario\b|deposito (em|na) conta|voce recebeu/;
+const CAP_EST=/estorno|reembolso|devolucao de|devolveu/;
+const CAP_OUT_S=/(voce|vc) (enviou|transferiu|fez) (um |uma )?(pix|transferencia)|pix enviado|transferencia (enviada|realizada|efetuada)|pagamento (via )?pix (realizado|enviado|efetuado)|boleto pago|pagamento de boleto/;
+const CAP_OUT_L=/pagamento (realizado|efetuado|confirmado)|voce pagou r\$|pagou r\$|voce enviou r\$|enviou r\$|voce transferiu r\$|pix de r\$.*para/;
+const CAP_BUY_S=/compra (aprovada|no (credito|debito)|de r\$|realizada|efetuada|autorizada)|(voce|vc) (fez|realizou) uma compra|compra .{0,40}aprovada|transacao aprovada|no cartao (final|de credito|de debito)|cartao .{0,12}(final|\*{2,}) ?\d{4}|compra no cartao|pagamento aprovado/;
+const CAP_BUY_L=/aprovad[oa].{0,30}r\$|r\$.{0,30}aprovad[oa]|compra.{0,20}r\$|r\$.{0,20}compra|cartao.{0,40}r\$/;
+function capMoney(s){const m=[...String(s).matchAll(/r\$\s*(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:,\d{1,2})?)/gi)];return m.map(x=>{let t=x[1];if(t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(/^\d{1,3}(\.\d{3})+$/.test(t))t=t.replace(/\./g,"");return{v:parseFloat(t),i:x.index,len:x[0].length}}).filter(x=>x.v>0&&isFinite(x.v))}
+function capTitle(s){if(!s)return s;if(s===s.toUpperCase()&&/[A-ZÀ-Ú]{2}/.test(s))return s.toLowerCase().replace(/(^|[\s\-\/'])([a-zà-ú])/g,(m,a,b)=>a+b.toUpperCase());return s}
+const CAP_BADM2=/^(seu|sua)\s+(cart|conta|saldo|fatura|limite)/i;
+const CAP_SEC=/\b(codigo|token|senha|nao compartilhe|verificacao|otp)\b/;
+const CAP_BADM=/^(cart[aã]o|cr[eé]dito|d[eé]bito|pix|conta|valor|r\$|\d|final|saldo|app|aplicativo|hoje|ontem|total|parcela|\d+x|sua conta|nubank|mercado pago|voc[eê])\b/i;
+function capClean(s){if(!s)return"";s=s.replace(/\s+/g," ").trim();s=s.replace(/\s*(?:com|no|na|em)\s+(?:o\s+)?(?:seu\s+)?(?:cart[aã]o|cr[eé]dito|d[eé]bito|pix)\b.*$/i,"").replace(/\s+(?:[àa]s?\s+)?\d{1,2}[:h]\d{2}.*$/i,"").replace(/\s+\d{1,2}\/\d{1,2}(?:\/\d{2,4})?.*$/,"");const p=s.match(/^(IFD|MP|MERCADOPAGO|PAG|PAGSEGURO|PICPAY|PG|EC|SUMUP|IZ|ZIG)\s*\*\s*(.+)$/i);if(p)s=/^IFD$/i.test(p[1])?"iFood":p[2];s=s.replace(/[\s,.;:\-–*]+$/,"").replace(/^[\s,.;:\-–*]+/,"");if(s.length>40)s=s.slice(0,40).replace(/\s+\S*$/,"");return capTitle(s)}
+function capMerchant(all,kind){const list=[];const push=(re,i)=>{for(const m of all.matchAll(re)){const c=capClean(m[i||1]);if(c&&c.length>1&&!CAP_BADM.test(c)&&!CAP_BADM2.test(c)&&!/^r\$/i.test(c))list.push(c)}};
+ const end="(?=\\s*(?:[.!?;,]|\\s[-–]\\s|\\s(?:em|no|na|com|via|as|às|hoje|ontem|[àa]s|no valor|de r\\$|r\\$)\\b|\\s\\d{1,2}[:\\/h]|$))";
+ if(kind=="in"){push(/\b([A-ZÀ-Ú][\p{L}'.]*(?:\s+[A-ZÀ-Ú][\p{L}'.]*){0,4})\s+(?:te enviou|te mandou|te transferiu|enviou)\b/gu);push(new RegExp("\\b(?:recebeu|recebido|recebida)\\b.{0,40}?\\b(?:de|do|da)\\s+(?!r\\$|\\d)([^\\n.!?]+?)"+end,"gi"));push(new RegExp("\\bremetente:?\\s*([^\\n.!?]+?)"+end,"gi"))}
+ else if(kind=="out"){push(new RegExp("\\b(?:para|pra|ao|a)\\s+([A-ZÀ-Ú0-9][^\\n.!?]*?)"+end,"g"));push(new RegExp("\\b(?:para|pra)\\s+([^\\n.!?]+?)"+end,"gi"));push(new RegExp("\\bfavorecido:?\\s*([^\\n.!?]+?)"+end,"gi"))}
+ else{push(new RegExp("\\b(?:em|no|na|nos|nas|at)\\s+([A-ZÀ-Ú0-9][^\\n.!?]*?)"+end,"g"));push(new RegExp("\\b(?:em|no|na)\\s+([^\\n.!?]+?)"+end,"gi"));push(new RegExp("\\b(?:estabelecimento|loja|local):?\\s*([^\\n.!?]+?)"+end,"gi"));push(new RegExp("\\bpara\\s+([A-ZÀ-Ú0-9][^\\n.!?]*?)"+end,"g"))}
+ return list[0]||""}
+function capBank(raw,bks,pkgN,appN,txN){const hit=(rx,s)=>rx.test(s);let canon="";for(const [rx,n] of CAP_BANKMAP){if(hit(rx,pkgN)||hit(rx,appN)){canon=n;break}}
+ const eq=n=>(bks||[]).find(b=>capN(b)==n)||(bks||[]).find(b=>capN(b).includes(n)||n.includes(capN(b)));
+ if(canon){const b=eq(canon);if(b)return{b,sure:1};return{b:"",sure:0,name:canon}}
+ for(const b of(bks||[])){if(capN(b).length>2&&txN.includes(capN(b)))return{b,sure:1}}return{b:"",sure:0}}
+function capClass(raw,ctx){ctx=ctx||{};const pkg=String(raw.p||""),app=String(raw.a||""),ti=String(raw.ti||""),tx=String(raw.tx||"");
+ if(CAP_NO.test(pkg))return null;
+ const pkgN=capN(pkg),appN=capN(app),fin=CAP_FIN.test(pkg)||CAP_FINL.test(appN),sms=CAP_SMS.test(pkgN)||CAP_SMS.test(appN);
+ const sents=(ti?ti+". ":"").concat(tx).split(/(?<=[.!?])\s+/),keep=sents.filter(s=>!/\b(limite|saldo)\b/.test(capN(s))),all=(keep.length?keep:sents).join(" ").trim(),allN=capN(all);
+ if(!all||CAP_REFUSED.test(allN)||CAP_SEC.test(allN))return null;
+ const hasV=capMoney(all);if(!hasV.length)return null;
+ const junk=CAP_JUNK.test(allN);
+ let kind=null,loose=false;
+ const inS=CAP_IN_S.test(allN),inL=CAP_IN_L.test(allN),outS=CAP_OUT_S.test(allN),outL=CAP_OUT_L.test(allN),buyS=CAP_BUY_S.test(allN),buyL=CAP_BUY_L.test(allN),est=CAP_EST.test(allN);
+ if(est&&(fin||inS))kind="in";
+ else if(inS)kind="in";else if(outS)kind="out";else if(buyS)kind="buy";
+ else if(fin||sms){if(inL)kind="in";else if(outL)kind="out";else if(buyL)kind="buy";loose=!!kind}
+ if(!kind)return null;
+ if(junk&&!(buyS||inS||outS))return null;
+ if(junk&&/\b(oferta|promo|desconto|cupom|ganhe|sorteio|aproveite|emprestimo|pre-?aprovad|simule|parcele)\b/.test(allN)&&!/(aprovada|enviou|recebeu|enviado|recebido)/.test(allN))return null;
+ /* valor e parcelas */
+ let nv=0,v=hasV[0].v;const pm1=all.match(/(\d{1,2})\s*x\s*(?:de\s*)?r\$\s*(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:,\d{1,2})?)/i),pm2=allN.match(/(?:em|parcelad[oa] em)\s+(\d{1,2})\s*x/);
+ if(pm1&&+pm1[1]>1){nv=+pm1[1];const mm=capMoney("R$ "+pm1[2])[0];const first=hasV[0];if(mm&&first&&Math.abs(first.v-mm.v)<0.005&&hasV.length==1)v=Math.round(mm.v*nv*100)/100}
+ else if(pm2&&+pm2[1]>1){nv=+pm2[1]}
+ if(nv>36)nv=0;
+ const k=kind=="in"?"e":"g",fl=[];
+ /* forma de pagamento, banco, vale */
+ const bk=capBank(raw,ctx.bks,pkgN,appN,allN);let pm="",et="cc";
+ const vale=CAP_VALE.test(appN)||CAP_VALE.test(pkgN)||/\b(vale[- ](alimentacao|refeicao)|beneficio|saldo (alimentacao|refeicao)|ticket|alelo|sodexo|pluxee|\bvr\b)\b/.test(allN);
+ let bkName=bk.b;
+ if(vale){et="vale";if(k=="g"){pm="Vale"}if(!bkName){const t=(ctx.bks||[]).find(b=>/ticket|alelo|sodexo|pluxee|vr|flash|ben|alimenta/i.test(b));bkName=t||"";if(!t)fl.push("bk")}}
+ if(k=="g"&&!pm){if(kind=="out")pm="Pix";else if(/\bpix\b/.test(allN))pm="Pix";else if(/\bdebito\b/.test(allN))pm="Débito";else if(/\bcredito\b|\bparcela/.test(allN)||nv>1)pm="Crédito";else{pm="Crédito";fl.push("pm")}}
+ if(!bkName&&!vale)fl.push("bk");
+ /* descrição */
+ let n=capMerchant(all,kind);
+ if(!n&&ti&&!/compra|pix|aprovad|pagamento|transfer|recebid|enviad|nubank|mercado pago|cart[aã]o|boleto|dep[oó]sito|cr[eé]dito|d[eé]bito|valor|r\$|\d/i.test(ti))n=capClean(ti);
+ const sal=/\bsalario\b|folha de pagamento|remuneracao|proventos/.test(allN)?1:0;
+ if(k=="e"&&!n&&sal)n="Salário";
+ if(kind=="out"&&n&&!/^(pix|boleto)/i.test(n)&&/\bpix\b/.test(allN))n="Pix "+n;
+ if(kind=="out"&&!n&&/boleto/.test(allN))n="Boleto";
+ if(!n)fl.push("d");
+ let c=null;if(ctx.catOf&&k=="g")c=ctx.catOf(capN(n+" "+all));if(!c){c="Outros";if(k=="g")fl.push("c")}
+ const t=+raw.t||Date.now(),d=new Date(t),p2=x=>String(x).padStart(2,"0");
+ return{id:String(raw.id||t),t,app:app.slice(0,30),ti:ti.slice(0,80),tx:tx.slice(0,220),k,v,n,pm,et:k=="e"?et:undefined,bk:bkName,c,dt:d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate()),nv,fl,sal,est:est?1:0,loose:loose?1:0}}
+
+/* ----- Chegou: ligação com o Casinha ----- */
+const capCat=t=>{for(const [c,re] of QCAT){if(new RegExp(re.source.replace(/^\\b\(/,"\\b(?:").replace(/\)\\b$/,")s?\\b")).test(t))return c}return null};
+const capCtx=()=>({bks:S.bks||[],catOf:capCat});
+function capIngest(arr){S.cx=S.cx||[];S.cxd=S.cxd||{};let n=0;const now=Date.now();
+ for(const r of arr){if(!r||r.id==null||S.cxd[r.id])continue;S.cxd[r.id]=now;let it=null;try{it=capClass(r,capCtx())}catch(e){}if(it){S.cx.push(it);n++}}
+ Object.keys(S.cxd).forEach(k=>{if(now-S.cxd[k]>45*864e5)delete S.cxd[k]});
+ S.cx=S.cx.filter(x=>now-x.t<30*864e5);return n}
+function capDecode(h){try{const m=/[#&]cap=([A-Za-z0-9_\-]+)/.exec(h);if(!m)return null;let b=m[1].replace(/-/g,"+").replace(/_/g,"/");while(b.length%4)b+="=";const bin=atob(b),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);const j=JSON.parse(new TextDecoder("utf-8").decode(u));return j&&Array.isArray(j.items)?j.items:null}catch(e){return null}}
+function capGrab(){try{const h=location.hash||"";if(/cap=/.test(h)){const it=capDecode(h);try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(it&&it.length){let q=[];try{q=JSON.parse(localStorage.getItem("casinha_cap")||"[]")}catch(e){}try{localStorage.setItem("casinha_cap",JSON.stringify(q.concat(it).slice(-150)))}catch(e){}}}}catch(e){}capFlush()}
+function capFlush(){try{if(!ready)return;let q=[];try{q=JSON.parse(localStorage.getItem("casinha_cap")||"[]")}catch(e){}if(!q.length)return;try{localStorage.removeItem("casinha_cap")}catch(e){}const n=capIngest(q);S.cxAt=Date.now();go();if(n)setTimeout(()=>{if(!sh.classList.contains("on"))chegou();toast(n+(n>1?" movimentações novas":" movimentação nova"))},350)}catch(e){}}
+window.addEventListener("hashchange",capGrab);document.addEventListener("visibilitychange",()=>{if(!document.hidden)capGrab()});
+const capPend=()=>(S.cx||[]).slice().sort((a,b)=>b.t-a.t);
+function capMatch(it,used){const p=it.dt.split("-").map(Number),pm0=p[0]*12+p[1]-1,d=p[2],fl=it.fl||[];
+ if(it.k=="e"){let b=null,bd=1e18;ents(CM).filter(e=>e.rec&&e.t==(it.et||"cc")&&!(S.ec||{})[e.id+"|"+CM]).forEach(e=>{const df=Math.abs(e.v-it.v);if((it.sal||df<=e.v*0.12)&&df<bd){bd=df;b=e}});return b?{type:"ent",e:b}:null}
+ const cr=it.pm=="Crédito",cm=pm0+(cr&&it.bk&&(S.fcd||{})[it.bk]>=d?-1:0),pmU=fl.includes("pm");
+ const ok=x=>Math.abs((x.v||0)-it.v)<0.005&&(!it.bk||!x.b||x.b==it.bk)&&(pmU||it.pm==x.m)&&x.dia!=null&&Math.abs(x.dia-d)<=2&&x.pg!==1&&!(x.m=="Crédito"&&x.inf)&&!used.has("l"+x.id)&&(x.mes==cm||x.mes==pm0);
+ const lc=S.lan.filter(ok).sort((a,b)=>Math.abs(a.dia-d)-Math.abs(b.dia-d))[0];
+ if(lc){used.add("l"+lc.id);return{type:"lan",x:lc}}
+ if(cr||pmU){const rc=items(cm).filter(x=>x.rec&&x.m=="Crédito"&&(!it.bk||x.b==it.bk)&&Math.abs(x.v-it.v)<0.005&&!x.inf&&!used.has("r"+x.id+cm));const r=rc[0];if(r){used.add("r"+r.id+cm);return{type:"rec",x:r,cm}}}
+ return null}
+function capDrop(id,keepSeen){S.cx=(S.cx||[]).filter(x=>x.id!=id);S.cxd=S.cxd||{};S.cxd[id]=Date.now()}
+function capLaunch(it){const p0=S.lan.length;cl();
+ openAdd(undefined,{n:it.n,v:it.v,tipo:it.k=="e"?"e":"g",pm:it.pm||"Crédito",et:it.et||"cc",bk:it.bk||"",c:it.c,dt:it.dt,nv:it.nv>1?it.nv:0,q:{txt:(it.ti?it.ti+": ":"")+it.tx,fl:it.fl||[],lb:"Notificação:"},
+  done:()=>{capDrop(it.id);if(it.k=="g")S.lan.slice(p0).filter(x=>x.m=="Crédito"&&x.b&&(!x.pc||/^1\//.test(x.pc))).forEach(x=>{x.inf=1;fatAdd(x.b,x.mes,x.v)});setTimeout(()=>{if(!sh.classList.contains("on")&&capPend().length)chegou()},700)}})}
+function capSalario(e,v,somar){const k=e.t=="vale"?"vale":"cc",o=S.saldo[k];if(somar){const nv=r2((o||0)+v);if(o!=null)hsPush(k,o,nv);S.saldo[k]=nv}if(r2(v)!=r2(e.v)){const w="e"+e.id+"|"+CM;S.ov[w]=Object.assign(S.ov[w]||{},{v})}S.ec=S.ec||{};S.ec[e.id+"|"+CM]=1}
+function capCard(it,used){const m=capMatch(it,used),d=new Date(it.t),hh=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),dl=it.dt.split("-").reverse().slice(0,2).join("/");
+ const info=it.k=="e"?[it.et=="vale"?"Vale-alimentação":"Conta",it.bk].filter(Boolean).join(" · "):[it.pm+(it.nv>1?" em "+it.nv+"x":""),it.bk].filter(Boolean).join(" · ");
+ const raw=((it.ti?it.ti+": ":"")+it.tx).slice(0,150);
+ let ml="",bt="";const b=(a,l,c)=>`<button class="go ${c||""}" data-cxa="${a}" data-id="${E(it.id)}" style="flex:1;min-width:46%">${l}</button>`;
+ if(it.k=="e"){if(m&&m.type=="ent"){ml=`<div style="font-size:13px;margin:0 0 8px">Parece ser <b>${E(m.e.n)}</b> (previsto ${R(m.e.v)}).</div>`;bt=b("sal","Já caiu: somar no saldo")+b("salj","Já atualizei o saldo","gh")+b("add","Lançar como entrada","gh")}else bt=b("add","Lançar entrada")}
+ else if(m&&m.type=="lan"){ml=`<div style="font-size:13px;margin:0 0 8px">Parece ser o que você já lançou: <b>${E(m.x.n)}</b> (dia ${m.x.dia}).</div>`;bt=b("same","É o mesmo")+b("add","Lançar novo","gh")}
+ else if(m&&m.type=="rec"){ml=`<div style="font-size:13px;margin:0 0 8px">Parece ser a recorrente <b>${E(m.x.n)}</b>.</div>`;bt=b("rec","É a recorrente")+b("add","Lançar novo","gh")}
+ else bt=b("add","Lançar");
+ return `<div data-cxc="${E(it.id)}" style="background:var(--bg);border-radius:18px;padding:14px;margin-bottom:10px"><div class="lg" style="padding:0 0 6px"><span><b>${it.k=="e"?"Entrou":"Saiu"} ${R(it.v)}</b>${it.n?" · "+E(it.n):""}<br><small style="color:var(--m)">${E(info)} · ${dl} ${hh}${it.est?" · estorno":""}</small></span></div><div style="font-size:12px;color:var(--m);margin:0 0 8px;line-height:1.35">“${E(raw)}”</div>${ml}<div style="display:flex;gap:8px;flex-wrap:wrap">${bt}<button class="xs" data-cxa="no" data-id="${E(it.id)}" style="padding:10px 14px">Dispensar</button></div></div>`}
+function chegou(){const L=capPend();if(!L.length){cl();return}const used=new Set();
+ sheet(`<h2 style="margin-bottom:4px">Chegou do celular</h2><p style="color:var(--m);margin:0 0 12px;font-size:14px">Confira cada uma. Só entra no Casinha o que você confirmar.</p><div style="max-height:62vh;overflow:auto">${L.map(it=>capCard(it,used)).join("")}</div><button class="go gh" id="cxall" style="margin-top:6px">Dispensar todas</button>`);
+ shb.querySelectorAll("[data-cxa]").forEach(bn=>bn.onclick=()=>{const it=(S.cx||[]).find(x=>String(x.id)==bn.dataset.id);if(!it)return;const a=bn.dataset.cxa,u2=new Set(),m=capMatch(it,u2);
+  const after=msg=>{go();if(msg)toast(msg);if(capPend().length)chegou();else cl()};
+  if(a=="no"){capDrop(it.id);return after()}
+  if(a=="add")return capLaunch(it);
+  if(a=="same"&&m&&m.type=="lan"){const x=m.x;if(x.m=="Crédito"&&x.b&&!x.inf){x.inf=1;fatAdd(x.b,x.mes,x.v)}if((x.m=="Pix"||x.m=="Débito")&&x.pg===0)x.pg=1;capDrop(it.id);return after(x.m=="Crédito"?"Marcado: já está na fatura":"Confirmado")}
+  if(a=="rec"&&m&&m.type=="rec"){const k="r"+m.x.id+"|"+m.cm;S.ov[k]=Object.assign(S.ov[k]||{},{inf:1});if(m.x.b)fatAdd(m.x.b,m.cm,m.x.v);capDrop(it.id);return after("Marcado: já está na fatura")}
+  if((a=="sal"||a=="salj")&&m&&m.type=="ent"){capSalario(m.e,it.v,a=="sal");capDrop(it.id);return after(a=="sal"?"Somei "+R(it.v)+" no saldo":"Certo, não somei de novo no saldo")}
+ });
+ $("cxall").onclick=()=>conf2("Dispensar todas?","Elas somem da lista e não voltam.","Dispensar",()=>{capPend().forEach(x=>capDrop(x.id));go();cl()})}
+
+function capSetup(){const at=S.cxAt?new Date(S.cxAt):null,pz=n=>String(n).padStart(2,"0");
+ sheet(`<h2 style="margin-bottom:4px">Captura automática</h2><p style="color:var(--m);margin:0 0 12px;font-size:14px">Um app pequeno no seu Android lê as notificações do banco e manda para cá. Você só confirma. ${at?`Última entrega: ${pz(at.getDate())}/${pz(at.getMonth()+1)} às ${pz(at.getHours())}:${pz(at.getMinutes())}.`:"Nenhuma entrega ainda."}</p>
+ <div style="background:var(--bg);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:14px;line-height:1.5"><b>Instalar (uma vez)</b><br>1. Baixe e instale o app Casinha Captura (botão abaixo).<br>2. Abra o app e toque em <b>Liberar leitura das notificações</b>. Se o Android bloquear (“configuração restrita”), toque em <b>O Android bloqueou?</b> no app: ele leva você ao lugar certo.<br>3. Toque em <b>Permitir avisos do app</b>.<br>4. Deixe o app sem restrição de bateria, senão alguns celulares o desligam.</div>
+ <div style="background:var(--bg);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:14px;line-height:1.5"><b>No dia a dia</b><br>Quando chegar uma compra ou um Pix, o app avisa “Chegou no Casinha”. Toque no aviso e o Casinha abre a lista <b>Chegou</b>, já preenchida.</div>
+ <div style="background:var(--bg);border-radius:16px;padding:12px 14px;margin:0 0 14px;font-size:13px;line-height:1.5;color:var(--m)"><b style="color:var(--t)">Privacidade</b><br>O app guarda no celular só notificações com valor em reais e palavras de movimentação (compra, Pix, recebido). Não lê WhatsApp, redes sociais nem conversas, e nada vai para a internet: os dados só passam para o seu Casinha quando você toca em enviar.</div>
+ <button class="go" id="cxdl">Baixar o app (GitHub)</button>`);
+ $("cxdl").onclick=()=>{window.open("https://github.com/KalemanIvens/casinha-captura/releases/latest","_blank")}}
+
 IC.mic='<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>';
 const QSR=window.SpeechRecognition||window.webkitSpeechRecognition,QIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 let QK={tx:"",its:[],dn:{}};
 const qFl={v:"o valor",pm:"a forma de pagamento",bk:"o banco",c:"a categoria",dt:"a data",d:"a descrição"};
 const qSum=it=>`${it.tipo=="e"?"Entrada":"Gasto"} de ${R(it.v)}${it.n?" · "+E(it.n):""} · ${it.tipo=="e"?(it.et=="vale"?"Vale":"Conta"):it.pm}${it.nv>1?" em "+it.nv+"x":""} · ${E(it.bk)} · ${it.dt.split("-").reverse().join("/")}`;
-function qBanner(q){const fl=(q.fl||[]).filter(k=>qFl[k]);return`<div style="background:var(--bg);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:13px"><div style="color:var(--m)">Você disse:</div><div style="font-weight:600;margin:2px 0 ${fl.length?8:0}px">“${E(q.txt)}”</div>${fl.length?`<div style="color:#ff8a4c;font-weight:600">Confira ${fl.map(k=>qFl[k]).join(", ")} (marcado em laranja)</div>`:""}</div>`}
+function qBanner(q){const fl=(q.fl||[]).filter(k=>qFl[k]);return`<div style="background:var(--bg);border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:13px"><div style="color:var(--m)">${q.lb||"Você disse:"}</div><div style="font-weight:600;margin:2px 0 ${fl.length?8:0}px">“${E(q.txt)}”</div>${fl.length?`<div style="color:#ff8a4c;font-weight:600">Confira ${fl.map(k=>qFl[k]).join(", ")} (marcado em laranja)</div>`:""}</div>`}
 function qMark(q){if(!q)return;const mp={v:"am",pm:"pmr",bk:"bkr",c:"c",dt:"dt",d:"d"};(q.fl||[]).forEach(k=>{const e=$(mp[k]);if(e){e.style.outline="2px solid #ff8a4c";e.style.outlineOffset="2px";e.style.borderRadius="14px"}})}
 function qGo(){const tx=($("qt").value||"").trim();QK.tx=tx;if(!tx)return toast("Fale ou digite o lançamento");
  const rs=qparse(tx,{bks:S.bks||[],hoje:new Date()});const ok=rs.filter(r=>r.ok);
@@ -1317,13 +1446,14 @@ addEventListener("offline",()=>{window.__syncErr=1;banner(true)});addEventListen
 window.onAuth=(u,json,t)=>{
  if(!u){ready=false;inn=false;document.body.classList.add("out");login();return}
  if(!inn){inn=true;document.body.classList.remove("out");if(json){try{load(json)}catch(e){inn=false;ready=false;$("app").innerHTML=`<div style="padding:90px 24px;text-align:center"><h2>Não consegui abrir seus dados</h2><p style="color:var(--m)">Seus dados continuam salvos na nuvem. Nada foi apagado e nada será gravado agora.</p><button class="go" onclick="location.reload()">Tentar de novo</button><p style="color:var(--m);font-size:12px;margin-top:16px">${E(String(e&&e.message||e))}</p></div>`;return}}
-  S.user.n=S.user.n||(u.displayName||"").split(" ")[0]||(u.email||"").split("@")[0];S.user.e=S.user.e||u.email||"";hide=!!S.prefs[0];applyTheme(S.theme);mi=CM;tab=0;last=snap();cpSave(last);ready=true;mi=startMi();autoBk();go();if(json&&JSON.parse(json).ver!=2)setTimeout(()=>{last=snap();lastT=Date.now();FB.save(last)},0);return}
+  S.user.n=S.user.n||(u.displayName||"").split(" ")[0]||(u.email||"").split("@")[0];S.user.e=S.user.e||u.email||"";hide=!!S.prefs[0];applyTheme(S.theme);mi=CM;tab=0;last=snap();cpSave(last);ready=true;mi=startMi();autoBk();go();capFlush();if(json&&JSON.parse(json).ver!=2)setTimeout(()=>{last=snap();lastT=Date.now();FB.save(last)},0);return}
  if(json&&json!==last&&snap()===last&&!(t&&t<lastT)){try{load(json);last=snap();go()}catch(e){}}};
 window.onSlow=()=>{if(inn)return;$("app").innerHTML=`<div style="padding:90px 24px;text-align:center"><h2>Sem conexão com seus dados</h2><p style="color:var(--m)">Seus dados continuam salvos na nuvem. Nada foi apagado e nada será gravado agora.</p><button class="go" onclick="location.reload()">Tentar de novo</button></div>`};const emp=z=>{try{const o=JSON.parse(z);return !(o.rec&&o.rec.length)&&!(o.lan&&o.lan.length)&&!(o.bks&&o.bks.length)&&!(o.ent&&o.ent.length)&&!Object.values(o.saldo||{}).some(v=>v!=null&&v!==0)}catch(e){return false}};setInterval(()=>{if(!ready||!window.FB)return;const x=snap();if(x!==last){if(emp(x)&&!emp(last)){ready=false;toast("Bloqueei um salvamento vazio para proteger seus dados. Recarregue o app.");return}if(emp(x)){last=x;return}last=x;lastT=Date.now();FB.save(x);cpSave(x)}},1500);
 $("app").innerHTML='<p style="text-align:center;color:var(--m);padding-top:90px">Carregando…</p>';document.body.classList.add("out");
 setTimeout(()=>{if(!window.FB)login("Não foi possível carregar o serviço de login. Verifique a conexão.")},8000);
 try{Promise.all(["usd","eur","gbp"].map(c=>fetch("https://api.frankfurter.dev/v2/rate/"+c+"/brl").then(r=>r.json()))).then(a=>{if(a.every(x=>x.rate>0)){RATE={USD:a[0].rate,EUR:a[1].rate,GBP:a[2].rate};live=true;if(inn&&tab==0&&!sh.classList.contains("on"))go()}}).catch(()=>{})}catch(e){}
 try{if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}catch(e){}
+capGrab();
 </script><script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
